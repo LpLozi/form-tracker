@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0f1115" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="FORM" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<title>FORM — Kişisel Spor & Beslenme Takibi</title>
+<style>
+:root{--bg:#0f1115;--card:#171a21;--muted:#9aa3b2;--text:#f4f6f8;--accent:#79e0a8;--accent2:#7ab8ff;--danger:#ff7b7b;--warn:#ffd166;--border:#2a2f3a}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{position:sticky;top:0;z-index:10;background:rgba(15,17,21,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.wrap{max-width:1100px;margin:auto;padding:16px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{font-weight:800;letter-spacing:.12em}.brand span{color:var(--accent)}
+.nav{display:flex;gap:8px;overflow:auto;padding:10px 0}.nav button{white-space:nowrap;border:1px solid var(--border);background:var(--card);color:var(--text);padding:9px 12px;border-radius:10px;cursor:pointer}.nav button.active{background:var(--accent);color:#0b1710;border-color:var(--accent);font-weight:700}
+.grid{display:grid;gap:14px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}@media(max-width:800px){.g2,.g3,.g4{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px}.card h2,.card h3{margin:0 0 12px}.muted{color:var(--muted)}.big{font-size:30px;font-weight:800}.kpi{font-size:26px;font-weight:800}.accent{color:var(--accent)}.blue{color:var(--accent2)}
+button,.btn{font:inherit}.primary,.secondary,.danger{border:none;border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:700}.primary{background:var(--accent);color:#0b1710}.secondary{background:#242a34;color:var(--text);border:1px solid var(--border)}.danger{background:var(--danger);color:#220d0d}.small{padding:7px 9px;font-size:13px}
+input,select,textarea{width:100%;background:#101319;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px;outline:none}label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}.row{display:flex;gap:10px;align-items:end}.row>*{flex:1}.row .fit{flex:0 0 auto}.stack{display:flex;flex-direction:column;gap:10px}.hidden{display:none!important}
+.progress{height:10px;background:#0e1014;border-radius:999px;overflow:hidden;border:1px solid var(--border)}.progress>div{height:100%;background:var(--accent)}
+.list{display:flex;flex-direction:column;gap:8px}.item{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#12151b}.item strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#222832;color:var(--muted);font-size:12px}
+.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;padding:9px;border-bottom:1px solid var(--border);font-size:14px}.table th{color:var(--muted);font-weight:600}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}.tabs button{background:#222832;color:var(--text);border:1px solid var(--border);padding:8px 11px;border-radius:9px}.tabs button.active{background:var(--accent2);color:#08131f;border-color:var(--accent2)}
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}.photo-card img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:12px;background:#0c0e12}.right{text-align:right}.note{border-left:4px solid var(--accent2);padding:10px 12px;background:#111823;border-radius:8px}.divider{height:1px;background:var(--border);margin:14px 0}
+.toast{position:fixed;right:18px;bottom:18px;background:#1d2430;border:1px solid var(--border);padding:12px 14px;border-radius:10px;display:none;z-index:20}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="topbar"><div><div class="brand">F<span>O</span>RM</div><div class="muted" style="font-size:13px">Hüseyin’in kişisel dönüşüm kontrol merkezi</div></div><div id="todayText" class="muted"></div></div><div class="nav" id="mainNav"></div></div></header>
+<main class="wrap" id="app"></main><div id="toast" class="toast"></div>
+<script>
+const APP_VERSION='1.1.0';
+const defaultFoods=[
+{name:'Yulaf',brand:'Genel',unit:'g',servingG:100,kcal:389,protein:16.9,carb:66.3,fat:6.9,fiber:10.6,sugar:0.9,sodium:2,potassium:429,calcium:54,iron:4.7,magnesium:177,vitC:0,vitD:0},
+{name:'Muz (orta)',brand:'Genel',unit:'adet',servingG:118,kcal:89,protein:1.1,carb:22.8,fat:0.3,fiber:2.6,sugar:12.2,sodium:1,potassium:358,calcium:5,iron:0.3,magnesium:27,vitC:8.7,vitD:0},
+{name:'Tavuk göğsü (pişmiş)',brand:'Genel',unit:'g',servingG:100,kcal:165,protein:31,carb:0,fat:3.6,fiber:0,sugar:0,sodium:74,potassium:256,calcium:15,iron:1,magnesium:29,vitC:0,vitD:0.1},
+{name:'Pirinç (pişmiş)',brand:'Genel',unit:'g',servingG:100,kcal:130,protein:2.7,carb:28.2,fat:0.3,fiber:0.4,sugar:0.1,sodium:1,potassium:35,calcium:10,iron:0.2,magnesium:12,vitC:0,vitD:0},
+{name:'Yoğurt',brand:'Genel',unit:'g',servingG:100,kcal:61,protein:3.5,carb:4.7,fat:3.3,fiber:0,sugar:4.7,sodium:46,potassium:141,calcium:121,iron:0.1,magnesium:12,vitC:0.5,vitD:0.1},
+{name:'Süzme yoğurt',brand:'Genel',unit:'g',servingG:100,kcal:97,protein:9,carb:3.9,fat:5,fiber:0,sugar:3.6,sodium:36,potassium:141,calcium:110,iron:0.1,magnesium:11,vitC:0,vitD:0.1},
+{name:'Yumurta',brand:'Genel',unit:'adet',servingG:50,kcal:143,protein:12.6,carb:0.7,fat:9.5,fiber:0,sugar:0.4,sodium:142,potassium:138,calcium:56,iron:1.8,magnesium:12,vitC:0,vitD:2},
+{name:'Whey protein',brand:'Genel',unit:'ölçek',servingG:30,kcal:400,protein:80,carb:8,fat:6,fiber:0,sugar:4,sodium:300,potassium:400,calcium:500,iron:1,magnesium:80,vitC:0,vitD:0},
+{name:'Zeytinyağı',brand:'Genel',unit:'g',servingG:100,kcal:884,protein:0,carb:0,fat:100,fiber:0,sugar:0,sodium:2,potassium:1,calcium:1,iron:0.6,magnesium:0,vitC:0,vitD:0},
+{name:'Patates (haşlanmış)',brand:'Genel',unit:'g',servingG:100,kcal:87,protein:1.9,carb:20.1,fat:0.1,fiber:1.8,sugar:0.9,sodium:4,potassium:379,calcium:5,iron:0.3,magnesium:22,vitC:13,vitD:0},
+{name:'Elma (orta)',brand:'Genel',unit:'adet',servingG:182,kcal:52,protein:0.3,carb:13.8,fat:0.2,fiber:2.4,sugar:10.4,sodium:1,potassium:107,calcium:6,iron:0.1,magnesium:5,vitC:4.6,vitD:0},
+{name:'Ekmek tam buğday',brand:'Genel',unit:'dilim',servingG:30,kcal:247,protein:13,carb:41,fat:4.2,fiber:7,sugar:6,sodium:430,potassium:230,calcium:107,iron:2.5,magnesium:82,vitC:0,vitD:0},
+{name:'Badem',brand:'Genel',unit:'g',servingG:100,kcal:579,protein:21.2,carb:21.6,fat:49.9,fiber:12.5,sugar:4.4,sodium:1,potassium:733,calcium:269,iron:3.7,magnesium:270,vitC:0,vitD:0},
+{name:'Dana eti yağsız (pişmiş)',brand:'Genel',unit:'g',servingG:100,kcal:217,protein:26.1,carb:0,fat:11.8,fiber:0,sugar:0,sodium:72,potassium:318,calcium:18,iron:2.6,magnesium:21,vitC:0,vitD:0.2}
+];
+const defaultProgram={
+Upper:[['Bench Press',4,'6-8'],['Chest Supported Row',4,'8-10'],['Incline Dumbbell Press',3,'8-10'],['Lat Pulldown',3,'10-12'],['Seated Dumbbell Shoulder Press',3,'8-10'],['Cable Lateral Raise',4,'12-15'],['Triceps Pushdown',3,'10-12'],['EZ Bar Curl',3,'10-12']],
+Lower:[['Back Squat',4,'6-8'],['Romanian Deadlift',4,'8-10'],['Leg Press',3,'10-12'],['Leg Curl',3,'10-12'],['Leg Extension',3,'12-15'],['Standing Calf Raise',4,'10-15'],['Cable Crunch',3,'12-15']],
+Push:[['Incline Bench Press',4,'6-8'],['Machine Chest Press',3,'8-10'],['Cable Fly',3,'12-15'],['Machine Shoulder Press',3,'8-10'],['Cable Lateral Raise',4,'12-15'],['Overhead Rope Extension',3,'10-12'],['Rope Pushdown',3,'10-12']],
+Pull:[['Pull-up / Lat Pulldown',4,'6-10'],['Barbell Row',4,'6-8'],['Single Arm Row',3,'8-10'],['Face Pull',3,'12-15'],['Rear Delt Fly',3,'12-15'],['Hammer Curl',3,'8-10'],['Preacher Curl',3,'10-12'],['Shrug',3,'10-15']]
+};
+function seed(){return {version:APP_VERSION,profile:{name:'Hüseyin',height:181,startWeight:93,startDate:'2026-07-19'},targets:{kcal:2400,protein:190,carb:230,fat:70,fiber:30,water:4},foods:defaultFoods,meals:{},workouts:[],measurements:[{date:'2026-07-19',weight:93,waist:'',navel:'',neck:'',chest:'',armR:'',armL:'',thighR:'',thighL:'',note:'Başlangıç'}],photos:[],habits:{},program:defaultProgram,settings:{trainingDays:{1:'Upper',2:'Lower',4:'Push',6:'Pull'}}};}
+let db=JSON.parse(localStorage.getItem('formDB')||'null')||seed();
+function save(){localStorage.setItem('formDB',JSON.stringify(db));}
+const pages=['Panel','Beslenme','Antrenman','Ölçümler','Fotoğraflar','Ayarlar'];let current='Panel';
+const fmt=(n,d=0)=>Number(n||0).toLocaleString('tr-TR',{maximumFractionDigits:d});
+const dateKey=()=>new Date().toISOString().slice(0,10);const today=dateKey();
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.style.display='block';setTimeout(()=>el.style.display='none',1800)}
+function nutrientTotals(items=[]){let t={kcal:0,protein:0,carb:0,fat:0,fiber:0,sugar:0,sodium:0,potassium:0,calcium:0,iron:0,magnesium:0,vitC:0,vitD:0};items.forEach(i=>{const f=db.foods[i.foodIndex];if(!f)return;let grams=i.unit==='g'?Number(i.qty):Number(i.qty)*Number(f.servingG);let r=grams/100;Object.keys(t).forEach(k=>t[k]+=Number(f[k]||0)*r)});return t}
+function allMealsForDay(d){return Object.values(db.meals[d]||{}).flat()}
+function nav(){mainNav.innerHTML=pages.map(p=>`<button class="${p===current?'active':''}" onclick="go('${p}')">${p}</button>`).join('')}
+function go(p){current=p;nav();render()}
+function render(){document.getElementById('todayText').textContent=new Date().toLocaleDateString('tr-TR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});({Panel:renderPanel,Beslenme:renderNutrition,Antrenman:renderWorkout,Ölçümler:renderMeasurements,Fotoğraflar:renderPhotos,Ayarlar:renderSettings}[current])()}
+function renderPanel(){const t=nutrientTotals(allMealsForDay(today));const latest=[...db.measurements].sort((a,b)=>b.date.localeCompare(a.date))[0]||{};const day=new Date().getDay();const plan=db.settings.trainingDays[day]||'Dinlenme';const habits=db.habits[today]||{};app.innerHTML=`
+<div class="grid g4">
+<div class="card"><div class="muted">Güncel kilo</div><div class="kpi">${fmt(latest.weight,1)} kg</div><div class="muted">Başlangıç: ${db.profile.startWeight} kg</div></div>
+<div class="card"><div class="muted">Kalori</div><div class="kpi">${fmt(t.kcal)} / ${db.targets.kcal}</div><div class="progress"><div style="width:${Math.min(100,t.kcal/db.targets.kcal*100)}%"></div></div></div>
+<div class="card"><div class="muted">Protein</div><div class="kpi">${fmt(t.protein)} / ${db.targets.protein} g</div><div class="progress"><div style="width:${Math.min(100,t.protein/db.targets.protein*100)}%"></div></div></div>
+<div class="card"><div class="muted">Bugünkü plan</div><div class="kpi blue">${plan}</div><div class="muted">${plan==='Dinlenme'?'Aktif toparlanma':'Program hazır'}</div></div>
+</div>
+<div class="grid g2" style="margin-top:14px">
+<div class="card"><h2>Hızlı işlemler</h2><div class="grid g2"><button class="primary" onclick="go('Beslenme')">Öğün ekle</button><button class="primary" onclick="go('Antrenman')">Antrenmana başla</button><button class="secondary" onclick="quickWeight()">Kilo gir</button><button class="secondary" onclick="go('Fotoğraflar')">Fotoğraf ekle</button></div></div>
+<div class="card"><h2>Günlük alışkanlıklar</h2><div class="stack">
+<label><input type="checkbox" ${habits.creatine?'checked':''} onchange="habit('creatine',this.checked)"> Kreatin alındı</label>
+<label><input type="checkbox" ${habits.biotin?'checked':''} onchange="habit('biotin',this.checked)"> Biotin alındı</label>
+<div class="row"><div><label>Su (L)</label><input type="number" step="0.25" value="${habits.water||''}" onchange="habit('water',this.value)"></div><div><label>Adım</label><input type="number" value="${habits.steps||''}" onchange="habit('steps',this.value)"></div></div>
+</div></div>
+</div>
+<div class="card" style="margin-top:14px"><h2>Bugünün özeti</h2><div class="grid g4"><div><span class="muted">Karbonhidrat</span><div class="big">${fmt(t.carb)} g</div></div><div><span class="muted">Yağ</span><div class="big">${fmt(t.fat)} g</div></div><div><span class="muted">Lif</span><div class="big">${fmt(t.fiber)} g</div></div><div><span class="muted">Kalan kalori</span><div class="big ${db.targets.kcal-t.kcal<0?'':'accent'}">${fmt(db.targets.kcal-t.kcal)} kcal</div></div></div></div>`}
+function habit(k,v){db.habits[today]=db.habits[today]||{};db.habits[today][k]=v;save();render()}
+function quickWeight(){const w=prompt('Bugünkü kilon (kg):');if(!w)return;db.measurements.push({date:today,weight:Number(w)});save();toast('Kilo kaydedildi');render()}
+function renderNutrition(){const meals=['Kahvaltı','Öğle','Akşam','Ara Öğün','Antrenman Öncesi','Antrenman Sonrası'];const dayMeals=db.meals[today]||{};const total=nutrientTotals(allMealsForDay(today));app.innerHTML=`
+<div class="grid g3"><div class="card"><div class="muted">Kalori</div><div class="kpi">${fmt(total.kcal)} / ${db.targets.kcal}</div></div><div class="card"><div class="muted">Protein</div><div class="kpi">${fmt(total.protein)} / ${db.targets.protein} g</div></div><div class="card"><div class="muted">Makrolar</div><div><b>K:</b> ${fmt(total.carb)} g &nbsp; <b>Y:</b> ${fmt(total.fat)} g &nbsp; <b>Lif:</b> ${fmt(total.fiber)} g</div></div></div>
+<div class="card" style="margin-top:14px"><h2>Besin ekle</h2><div class="row"><div><label>Öğün</label><select id="mealName">${meals.map(m=>`<option>${m}</option>`).join('')}</select></div><div><label>Besin</label><select id="foodSel">${db.foods.map((f,i)=>`<option value="${i}">${f.name}${f.brand&&f.brand!=='Genel'?' — '+f.brand:''}</option>`).join('')}</select></div><div><label>Miktar</label><input id="foodQty" type="number" step="0.1" value="50"></div><div><label>Birim</label><select id="foodUnit"><option value="g">gram</option><option value="serving">adet/porsiyon</option></select></div><div class="fit"><button class="primary" onclick="addFood()">Ekle</button></div></div><div class="muted" style="margin-top:8px">Adet/porsiyon seçildiğinde besinin tanımlı standart porsiyonu kullanılır.</div></div>
+<div class="grid g2" style="margin-top:14px">${meals.map(m=>mealCard(m,dayMeals[m]||[])).join('')}</div>
+<div class="card" style="margin-top:14px"><h2>Mikro besin özeti</h2><table class="table"><tr><th>Besin</th><th>Toplam</th></tr><tr><td>Potasyum</td><td>${fmt(total.potassium)} mg</td></tr><tr><td>Kalsiyum</td><td>${fmt(total.calcium)} mg</td></tr><tr><td>Magnezyum</td><td>${fmt(total.magnesium)} mg</td></tr><tr><td>Demir</td><td>${fmt(total.iron,1)} mg</td></tr><tr><td>Sodyum</td><td>${fmt(total.sodium)} mg</td></tr><tr><td>C vitamini</td><td>${fmt(total.vitC,1)} mg</td></tr><tr><td>D vitamini</td><td>${fmt(total.vitD,1)} µg</td></tr></table></div>`}
+function mealCard(name,items){const t=nutrientTotals(items);return `<div class="card"><h3>${name}</h3><div class="muted">${fmt(t.kcal)} kcal • P ${fmt(t.protein)} • K ${fmt(t.carb)} • Y ${fmt(t.fat)}</div><div class="list" style="margin-top:10px">${items.length?items.map((i,idx)=>{const f=db.foods[i.foodIndex];return `<div class="item"><div><strong>${f.name}</strong><span class="muted">${i.qty} ${i.unit==='g'?'g':'porsiyon'}</span></div><button class="danger small" onclick="removeFood('${name}',${idx})">Sil</button></div>`}).join(''):'<div class="muted">Kayıt yok.</div>'}</div></div>`}
+function addFood(){const m=mealName.value,fi=Number(foodSel.value),qty=Number(foodQty.value),unit=foodUnit.value;if(!qty)return;db.meals[today]=db.meals[today]||{};db.meals[today][m]=db.meals[today][m]||[];db.meals[today][m].push({foodIndex:fi,qty,unit});save();toast('Besin eklendi');renderNutrition()}
+function removeFood(m,i){db.meals[today][m].splice(i,1);save();renderNutrition()}
+function renderWorkout(){const day=new Date().getDay();const suggested=db.settings.trainingDays[day]||'Upper';const selected=window._wk||suggested;window._wk=selected;const ex=db.program[selected]||[];const last=db.workouts.filter(w=>w.type===selected).slice(-1)[0];app.innerHTML=`
+<div class="card"><div class="row"><div><label>Antrenman</label><select onchange="window._wk=this.value;renderWorkout()">${Object.keys(db.program).map(k=>`<option ${k===selected?'selected':''}>${k}</option>`).join('')}</select></div><div><label>Tarih</label><input id="workoutDate" type="date" value="${today}"></div><div class="fit"><button class="primary" onclick="saveWorkout()">Antrenmanı kaydet</button></div></div></div>
+<div class="card" style="margin-top:14px"><h2>${selected} Programı</h2>${last?`<div class="note">Son ${selected}: ${last.date}</div>`:''}<div class="list" style="margin-top:12px">${ex.map((e,i)=>exerciseInput(e,i,last)).join('')}</div></div>`}
+function exerciseInput(e,i,last){let prev=last?.exercises?.find(x=>x.name===e[0]);return `<div class="item" style="display:block"><div style="display:flex;justify-content:space-between;gap:10px"><div><strong>${e[0]}</strong><span class="pill">${e[1]} set • ${e[2]} tekrar</span></div><div class="muted">${prev?`Son: ${prev.weight||'-'} kg / ${prev.reps||'-'}`:'İlk kayıt'}</div></div><div class="row" style="margin-top:8px"><div><label>Ağırlık (kg)</label><input id="w_${i}" type="number" step="0.5"></div><div><label>Tekrarlar (örn. 8,8,7)</label><input id="r_${i}" placeholder="8,8,8"></div><div><label>RIR</label><input id="rir_${i}" placeholder="2"></div><div><label>Not</label><input id="n_${i}"></div></div></div>`}
+function saveWorkout(){const type=window._wk;const ex=db.program[type].map((e,i)=>({name:e[0],sets:e[1],repRange:e[2],weight:Number(document.getElementById('w_'+i).value)||null,reps:document.getElementById('r_'+i).value,rir:document.getElementById('rir_'+i).value,note:document.getElementById('n_'+i).value}));db.workouts.push({date:workoutDate.value,type,exercises:ex});save();toast('Antrenman kaydedildi');renderWorkout()}
+function renderMeasurements(){const rows=[...db.measurements].sort((a,b)=>b.date.localeCompare(a.date));app.innerHTML=`<div class="card"><h2>Yeni ölçüm</h2><div class="grid g4"><div><label>Tarih</label><input id="m_date" type="date" value="${today}"></div><div><label>Kilo (kg)</label><input id="m_weight" type="number" step="0.1"></div><div><label>Bel (cm)</label><input id="m_waist" type="number" step="0.1"></div><div><label>Göbek (cm)</label><input id="m_navel" type="number" step="0.1"></div><div><label>Boyun (cm)</label><input id="m_neck" type="number" step="0.1"></div><div><label>Göğüs (cm)</label><input id="m_chest" type="number" step="0.1"></div><div><label>Sağ kol (cm)</label><input id="m_armR" type="number" step="0.1"></div><div><label>Sol kol (cm)</label><input id="m_armL" type="number" step="0.1"></div><div><label>Sağ bacak (cm)</label><input id="m_thighR" type="number" step="0.1"></div><div><label>Sol bacak (cm)</label><input id="m_thighL" type="number" step="0.1"></div><div><label>Not</label><input id="m_note"></div><div style="align-self:end"><button class="primary" onclick="addMeasurement()">Kaydet</button></div></div></div>
+<div class="card" style="margin-top:14px"><h2>Geçmiş</h2><div style="overflow:auto"><table class="table"><tr><th>Tarih</th><th>Kilo</th><th>Bel</th><th>Göbek</th><th>Boyun</th><th>Göğüs</th><th>Not</th></tr>${rows.map(r=>`<tr><td>${r.date}</td><td>${r.weight||'-'}</td><td>${r.waist||'-'}</td><td>${r.navel||'-'}</td><td>${r.neck||'-'}</td><td>${r.chest||'-'}</td><td>${r.note||''}</td></tr>`).join('')}</table></div></div>`}
+function addMeasurement(){const ids=['date','weight','waist','navel','neck','chest','armR','armL','thighR','thighL','note'];let o={};ids.forEach(k=>{let v=document.getElementById('m_'+k).value;o[k]=['date','note'].includes(k)?v:(v?Number(v):'')});db.measurements.push(o);save();toast('Ölçüm kaydedildi');renderMeasurements()}
+function renderPhotos(){app.innerHTML=`<div class="card"><h2>Form fotoğrafı ekle</h2><div class="row"><div><label>Tarih</label><input id="p_date" type="date" value="${today}"></div><div><label>Poz</label><select id="p_pose"><option>Ön rahat</option><option>Ön poz</option><option>Sağ yan</option><option>Sol yan</option><option>Arka</option><option>Biceps</option><option>Tam boy</option></select></div><div><label>Fotoğraf</label><input id="p_file" type="file" accept="image/*"></div><div class="fit"><button class="primary" onclick="addPhoto()">Ekle</button></div></div><div class="muted" style="margin-top:8px">Fotoğraflar yalnızca bu cihazın tarayıcısında saklanır. Düzenli olarak yedek dışa aktar.</div></div><div class="photo-grid" style="margin-top:14px">${db.photos.slice().reverse().map((p,i)=>`<div class="card photo-card"><img src="${p.data}"><strong>${p.pose}</strong><div class="muted">${p.date}</div></div>`).join('')||'<div class="muted">Henüz fotoğraf yok.</div>'}</div>`}
+function addPhoto(){const file=p_file.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{db.photos.push({date:p_date.value,pose:p_pose.value,data:r.result});save();toast('Fotoğraf eklendi');renderPhotos()};r.readAsDataURL(file)}
+function renderSettings(){app.innerHTML=`<div class="grid g2"><div class="card"><h2>Hedefler</h2><div class="grid g2">${[['kcal','Kalori'],['protein','Protein (g)'],['carb','Karbonhidrat (g)'],['fat','Yağ (g)'],['fiber','Lif (g)'],['water','Su (L)']].map(([k,l])=>`<div><label>${l}</label><input id="t_${k}" type="number" value="${db.targets[k]}"></div>`).join('')}</div><button class="primary" style="margin-top:12px" onclick="saveTargets()">Hedefleri kaydet</button></div>
+<div class="card"><h2>Yeni özel besin</h2><div class="grid g2"><div><label>Ad</label><input id="f_name"></div><div><label>Marka</label><input id="f_brand"></div><div><label>Standart porsiyon gramı</label><input id="f_serving" type="number" value="100"></div><div><label>Kalori /100g</label><input id="f_kcal" type="number"></div><div><label>Protein /100g</label><input id="f_protein" type="number"></div><div><label>Karbonhidrat /100g</label><input id="f_carb" type="number"></div><div><label>Yağ /100g</label><input id="f_fat" type="number"></div><div><label>Lif /100g</label><input id="f_fiber" type="number"></div></div><button class="primary" style="margin-top:12px" onclick="addCustomFood()">Besini ekle</button></div></div>
+<div class="card" style="margin-top:14px"><h2>Yedekleme</h2><div class="row"><button class="secondary" onclick="exportData()">JSON yedeği indir</button><div><label>Yedeği geri yükle</label><input type="file" id="importFile" accept="application/json" onchange="importData(this.files[0])"></div><button class="danger" onclick="resetAll()">Tüm veriyi sıfırla</button></div><div class="muted" style="margin-top:10px">Sürüm ${APP_VERSION}. Veriler bu tarayıcıda saklanır.</div></div>`}
+function saveTargets(){Object.keys(db.targets).forEach(k=>{const el=document.getElementById('t_'+k);if(el)db.targets[k]=Number(el.value)});save();toast('Hedefler kaydedildi')}
+function addCustomFood(){db.foods.push({name:f_name.value||'Özel besin',brand:f_brand.value||'Özel',unit:'g',servingG:Number(f_serving.value)||100,kcal:Number(f_kcal.value)||0,protein:Number(f_protein.value)||0,carb:Number(f_carb.value)||0,fat:Number(f_fat.value)||0,fiber:Number(f_fiber.value)||0,sugar:0,sodium:0,potassium:0,calcium:0,iron:0,magnesium:0,vitC:0,vitD:0});save();toast('Özel besin eklendi')}
+function exportData(){const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='FORM-yedek-'+today+'.json';a.click();URL.revokeObjectURL(a.href)}
+function importData(file){if(!file)return;const r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();toast('Yedek geri yüklendi');render()}catch(e){alert('Geçersiz yedek dosyası')}};r.readAsText(file)}
+function resetAll(){if(confirm('Tüm kayıtlar silinecek. Emin misin?')){db=seed();save();render();toast('Sıfırlandı')}}
+nav();render();
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(console.error);
+  });
+}
+
+</script>
+</body>
+</html>
