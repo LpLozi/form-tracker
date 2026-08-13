@@ -1,12 +1,12 @@
 {
-  "name": "FORGE — Kişisel Performans Takibi",
-  "short_name": "FORGE",
-  "description": "Hüseyin’in kişisel antrenman, beslenme ve performans takip uygulaması",
+  "name": "FORM — Kişisel Spor & Beslenme Takibi",
+  "short_name": "FORM",
+  "description": "Kişisel antrenman, beslenme ve gelişim takip uygulaması",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#121a2c",
-  "theme_color": "#121a2c",
+  "background_color": "#111827",
+  "theme_color": "#111827",
   "orientation": "portrait-primary",
   "icons": [
     {"src":"/api/icon","sizes":"192x192","type":"image/png","purpose":"any maskable"},
