@@ -1,14 +1,14 @@
-const CACHE_NAME = "form-v1.5.1";
+const CACHE_NAME = "form-v1.5.2";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./upgrade.css", "./upgrade.js", "./nutrition-plus.css", "./nutrition-plus.js", "./assets/form-logo.svg", "/api/icon"];
-const HEAD_INJECT='<link rel="stylesheet" href="./upgrade.css?v=151"><link rel="stylesheet" href="./nutrition-plus.css?v=151"><link rel="icon" href="./assets/form-logo.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/api/icon">';
-const BODY_INJECT='<script src="./upgrade.js?v=151"></script><script src="./nutrition-plus.js?v=151"></script>';
+const HEAD_INJECT='<link rel="stylesheet" href="./upgrade.css?v=152"><link rel="stylesheet" href="./nutrition-plus.css?v=152"><link rel="icon" href="./assets/form-logo.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/api/icon">';
+const BODY_INJECT='<script src="./upgrade.js?v=152"></script><script src="./nutrition-plus.js?v=152"></script>';
 function inject(html){let out=html;
   out=out.replace(/<title>FORGE — Kişisel Performans Takibi<\/title>/,'<title>FORM — Kişisel Spor & Beslenme Takibi</title>');
   out=out.replace(/<div class="brand">FOR<span>G<\/span>E<\/div>/,'<div class="brand">F<span>O</span>RM</div>');
   out=out.replace(/<h1>FORGE<\/h1>/,'<h1>FORM Performance</h1>');
   out=out.replace('Disiplinini kaydet. Gelişimini gör. Bir sonraki seviyeye çık.','Antrenman, beslenme ve vücut kompozisyonunu tek merkezden takip et.');
-  if(!out.includes('upgrade.css?v=151'))out=out.replace('</head>',HEAD_INJECT+'</head>');
-  if(!out.includes('upgrade.js?v=151'))out=out.replace('</body>',BODY_INJECT+'</body>');
+  if(!out.includes('upgrade.css?v=152'))out=out.replace('</head>',HEAD_INJECT+'</head>');
+  if(!out.includes('upgrade.js?v=152'))out=out.replace('</body>',BODY_INJECT+'</body>');
   return out;
 }
 self.addEventListener("install", event => { event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))); self.skipWaiting(); });
