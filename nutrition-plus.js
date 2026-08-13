@@ -1,0 +1,33 @@
+/* FORM v1.5.1 — professional nutrition entry flow */
+(function(){
+const extras=[
+{name:'Ayran',category:'Yumurta & Süt',brand:'Genel',unit:'bardak',servingG:200,kcal:37,protein:2.2,carb:3.1,fat:1.7,fiber:0},
+{name:'Labne',category:'Yumurta & Süt',brand:'Genel',unit:'g',servingG:100,kcal:216,protein:7.5,carb:4.6,fat:18.5,fiber:0},
+{name:'Mozzarella light',category:'Yumurta & Süt',brand:'Genel',unit:'g',servingG:100,kcal:180,protein:24,carb:3,fat:8,fiber:0},
+{name:'Hindi füme',category:'Et & Tavuk',brand:'Genel',unit:'g',servingG:100,kcal:104,protein:19,carb:2,fat:2.5,fiber:0},
+{name:'Tavuk göğsü (çiğ)',category:'Et & Tavuk',brand:'Genel',unit:'g',servingG:100,kcal:120,protein:22.5,carb:0,fat:2.6,fiber:0},
+{name:'Dana rosto',category:'Et & Tavuk',brand:'Genel',unit:'g',servingG:100,kcal:190,protein:29,carb:0,fat:8,fiber:0},
+{name:'Tam buğday tortilla',category:'Ekmek',brand:'Genel',unit:'adet',servingG:60,kcal:290,protein:9,carb:49,fat:6,fiber:7},
+{name:'Pirinç kreması',category:'Tahıl',brand:'Genel',unit:'g',servingG:100,kcal:370,protein:7,carb:82,fat:1,fiber:1},
+{name:'Müsli şekersiz',category:'Tahıl',brand:'Genel',unit:'g',servingG:100,kcal:360,protein:11,carb:65,fat:6,fiber:9},
+{name:'Esmer pirinç (pişmiş)',category:'Tahıl',brand:'Genel',unit:'g',servingG:100,kcal:123,protein:2.7,carb:25.6,fat:1,fiber:1.6},
+{name:'Nohut makarnası (pişmiş)',category:'Tahıl',brand:'Genel',unit:'g',servingG:100,kcal:164,protein:9,carb:27,fat:2.5,fiber:5},
+{name:'Protein puding',category:'Sporcu Gıdası',brand:'Genel',unit:'adet',servingG:200,kcal:75,protein:10,carb:5,fat:1.5,fiber:0},
+{name:'Skyr',category:'Yumurta & Süt',brand:'Genel',unit:'g',servingG:100,kcal:63,protein:11,carb:4,fat:.2,fiber:0},
+{name:'Edamame (pişmiş)',category:'Sebze & Bakliyat',brand:'Genel',unit:'g',servingG:100,kcal:121,protein:11.9,carb:8.9,fat:5.2,fiber:5.2},
+{name:'Fasulye barbunya (pişmiş)',category:'Sebze & Bakliyat',brand:'Genel',unit:'g',servingG:100,kcal:127,protein:8.7,carb:22.8,fat:.5,fiber:6.4},
+{name:'Hurma',category:'Meyve',brand:'Genel',unit:'adet',servingG:24,kcal:282,protein:2.5,carb:75,fat:.4,fiber:8},
+{name:'Mango',category:'Meyve',brand:'Genel',unit:'g',servingG:100,kcal:60,protein:.8,carb:15,fat:.4,fiber:1.6},
+{name:'Kabak çekirdeği',category:'Kuruyemiş',brand:'Genel',unit:'g',servingG:100,kcal:559,protein:30,carb:11,fat:49,fiber:6},
+{name:'Kajun fıstığı',category:'Kuruyemiş',brand:'Genel',unit:'g',servingG:100,kcal:553,protein:18,carb:30,fat:44,fiber:3.3},
+{name:'Humus',category:'Sebze & Bakliyat',brand:'Genel',unit:'g',servingG:100,kcal:166,protein:7.9,carb:14.3,fat:9.6,fiber:6}
+];
+function hydrateExtras(){if(!window.db||!Array.isArray(db.foods))return;const names=new Set(db.foods.map(f=>(f.name||'').toLocaleLowerCase('tr-TR')));let changed=false;extras.forEach(f=>{if(!names.has(f.name.toLocaleLowerCase('tr-TR'))){db.foods.push({...f,sugar:0,sodium:0,potassium:0,calcium:0,iron:0,magnesium:0,vitC:0,vitD:0});changed=true;}});if(changed&&typeof save==='function')save();}
+function gramsFor(f,qty,mode){return mode==='serving'?Number(qty)*Number(f.servingG||100):Number(qty)}
+function preview(fi){const f=db.foods[fi];if(!f)return;const qty=Number(document.getElementById('foodModalQty')?.value||0);const mode=document.getElementById('foodModalMode')?.value||'g';const grams=gramsFor(f,qty,mode);const r=grams/100;const set=(id,val,suffix='')=>{const e=document.getElementById(id);if(e)e.textContent=(Math.round(val*10)/10).toLocaleString('tr-TR')+suffix};set('foodPrevKcal',Number(f.kcal||0)*r,' kcal');set('foodPrevP',Number(f.protein||0)*r,' g');set('foodPrevC',Number(f.carb||0)*r,' g');set('foodPrevF',Number(f.fat||0)*r,' g');const g=document.getElementById('foodPrevGram');if(g)g.textContent=Math.round(grams)+' g';}
+window.closeFoodModal=function(){document.getElementById('foodModalBackdrop')?.remove();document.body.classList.remove('modal-open')};
+window.foodModalPreview=function(fi){preview(fi)};
+window.confirmFoodModal=function(fi){const f=db.foods[fi];if(!f)return;const qty=Number(document.getElementById('foodModalQty')?.value||0);const mode=document.getElementById('foodModalMode')?.value||'g';const meal=document.getElementById('foodModalMeal')?.value||window._meal||'Kahvaltı';if(!qty||qty<=0)return;window._meal=meal;addFood(fi,qty,mode);closeFoodModal();};
+window.openFoodAdder=function(fi){const f=db.foods[fi];if(!f)return;closeFoodModal();const meals=['Kahvaltı','Öğle','Akşam','Ara Öğün','Antrenman Öncesi','Antrenman Sonrası'];const defaultMode=f.unit==='g'?'g':'serving';const defaultQty=defaultMode==='g'?100:1;const el=document.createElement('div');el.id='foodModalBackdrop';el.className='food-modal-backdrop';el.innerHTML=`<div class="food-modal" role="dialog" aria-modal="true"><div class="food-modal-head"><div><div class="food-modal-kicker">Besin ekle</div><h2>${f.name}</h2><div class="muted">${f.brand&&f.brand!=='Genel'?f.brand+' • ':''}${f.category||'Diğer'}</div></div><button class="food-modal-x" onclick="closeFoodModal()">×</button></div><div class="food-modal-grid"><div><label>Öğün</label><select id="foodModalMeal">${meals.map(m=>`<option ${m===(window._meal||'Kahvaltı')?'selected':''}>${m}</option>`).join('')}</select></div><div><label>Miktar</label><input id="foodModalQty" type="number" inputmode="decimal" step="0.1" min="0" value="${defaultQty}" oninput="foodModalPreview(${fi})"></div><div><label>Birim</label><select id="foodModalMode" onchange="foodModalPreview(${fi})"><option value="g" ${defaultMode==='g'?'selected':''}>Gram</option><option value="serving" ${defaultMode==='serving'?'selected':''}>Standart porsiyon (${f.servingG||100} g)</option></select></div></div><div class="food-preview"><div><span>Gerçek miktar</span><b id="foodPrevGram">—</b></div><div><span>Kalori</span><b id="foodPrevKcal">—</b></div><div><span>Protein</span><b id="foodPrevP">—</b></div><div><span>Karbonhidrat</span><b id="foodPrevC">—</b></div><div><span>Yağ</span><b id="foodPrevF">—</b></div></div><div class="food-modal-actions"><button class="secondary" onclick="closeFoodModal()">Vazgeç</button><button class="primary" onclick="confirmFoodModal(${fi})">Öğüne ekle</button></div></div>`;el.addEventListener('click',e=>{if(e.target===el)closeFoodModal()});document.body.appendChild(el);document.body.classList.add('modal-open');setTimeout(()=>preview(fi),0);};
+hydrateExtras();
+})();
