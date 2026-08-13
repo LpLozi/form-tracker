@@ -1,9 +1,6 @@
 {
-  "rewrites": [
-    {"source":"/","destination":"/api/app"},
-    {"source":"/index.html","destination":"/api/app"}
-  ],
   "headers": [
-    {"source":"/api/app","headers":[{"key":"Cache-Control","value":"no-store, max-age=0"}]}
+    {"source":"/index.html","headers":[{"key":"Cache-Control","value":"no-store, max-age=0"}]},
+    {"source":"/app-base.html","headers":[{"key":"Cache-Control","value":"no-cache"}]}
   ]
 }
