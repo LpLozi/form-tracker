@@ -1,0 +1,35 @@
+(()=>{
+const focusByPlan={};
+function selectedPlan(){return window._wk||Object.keys(db.program||{})[0]||''}
+function planRows(){return (db.program?.[selectedPlan()]||[]).map(normalizeExercise)}
+function currentIndex(){const rows=planRows(),raw=Number(focusByPlan[selectedPlan()]||0);return Math.max(0,Math.min(Math.max(0,rows.length-1),raw))}
+function setFocus(index,scroll=true){const rows=planRows();if(!rows.length)return;focusByPlan[selectedPlan()]=Math.max(0,Math.min(rows.length-1,index));applyWorkoutFocus();if(scroll)setTimeout(()=>document.getElementById('formCurrentExercise')?.scrollIntoView({behavior:'smooth',block:'start'}),40)}
+function setProgress(i){const card=document.querySelectorAll('.workout-card')[i];if(!card)return{done:false,partial:false,total:0,checked:0};const checks=[...card.querySelectorAll('.set-done input[type="checkbox"]')],checked=checks.filter(x=>x.checked).length;return{done:checks.length>0&&checked===checks.length,partial:checked>0&&checked<checks.length,total:checks.length,checked}}
+function selectorHTML(){const rows=planRows(),active=currentIndex();return `<div class="form-exercise-selector" id="formExerciseSelector"><div class="form-selector-head"><b>Programdaki hareketler</b><span>İsme dokunarak geç</span></div><div class="form-selector-list">${rows.map((e,i)=>{const p=setProgress(i),state=i===active?'active':p.done?'done':p.partial?'partial':'';const label=i===active?'Şu an':p.done?'Tamamlandı':p.partial?`${p.checked}/${p.total} set`:'Aç';return `<button class="form-selector-btn ${state}" onclick="formSelectExercise(${i})"><span class="form-selector-num">${p.done?'✓':i+1}</span><span class="form-selector-name"><b>${e.name}</b><small>${e.sets} set • ${e.reps} tekrar</small></span><span class="form-selector-state">${label}</span></button>`}).join('')}</div></div>`}
+function applyWorkoutFocus(){const rows=planRows(),cards=[...document.querySelectorAll('.workout-card')];if(!rows.length||cards.length<rows.length)return;const active=currentIndex(),e=rows[active],pct=Math.round((active+1)/rows.length*100),wrap=cards[0].parentElement;if(!wrap)return;document.getElementById('formCurrentExercise')?.remove();document.getElementById('formExerciseSelector')?.remove();document.querySelector('.form-exercise-nav')?.remove();cards.forEach((card,i)=>{card.classList.toggle('form-active-exercise',i===active);card.classList.toggle('form-hidden-exercise',i!==active)});const banner=document.createElement('div');banner.id='formCurrentExercise';banner.className='form-exercise-focus';banner.innerHTML=`<div class="form-current-banner"><div><span>ŞU ANKİ HAREKET</span><b>${active+1} / ${rows.length} · ${e.name}</b></div><strong>%${pct}</strong></div><div class="form-workout-progress"><i style="width:${pct}%"></i></div>`;wrap.insertBefore(banner,cards[0]);const nav=document.createElement('div');nav.className='form-exercise-nav';nav.innerHTML=`<button class="secondary" onclick="formPrevExercise()" ${active===0?'disabled':''}>← Önceki</button><button class="form-next-exercise" onclick="formNextExercise()" ${active===rows.length-1?'disabled':''}>Sıradaki hareket →</button>`;cards[active].insertAdjacentElement('afterend',nav);wrap.insertAdjacentHTML('beforeend',selectorHTML())}
+window.formSelectExercise=i=>setFocus(i);
+window.formPrevExercise=()=>setFocus(currentIndex()-1);
+window.formNextExercise=()=>setFocus(currentIndex()+1);
+
+function pausedNow(){return !!window._workoutPauseAt}
+function elapsedMs(){if(!window._workoutStart)return 0;const paused=Number(window._workoutPausedTotal)||0,current=pausedNow()?Date.now()-window._workoutPauseAt:0;return Math.max(0,Date.now()-window._workoutStart-paused-current)}
+window.elapsedSeconds=()=>Math.floor(elapsedMs()/1000);
+window.elapsedText=()=>{const t=elapsedSeconds(),h=Math.floor(t/3600),m=Math.floor((t%3600)/60),s=t%60;return [h,m,s].map(x=>String(x).padStart(2,'0')).join(':')};
+window.startTimerTick=function(){clearInterval(window._timerInt);if(pausedNow())return;window._timerInt=setInterval(()=>{const e=document.getElementById('workoutTimer');if(e)e.textContent=elapsedText();else clearInterval(window._timerInt)},1000)};
+window.formStartWorkout=function(){if(!window._workoutStart){window._workoutStart=Date.now();window._workoutPausedTotal=0;window._workoutPauseAt=null}else if(pausedNow()){window._workoutPausedTotal=(Number(window._workoutPausedTotal)||0)+(Date.now()-window._workoutPauseAt);window._workoutPauseAt=null}updateTimerControls();startTimerTick()};
+window.formPauseWorkout=function(){if(!window._workoutStart||pausedNow())return;window._workoutPauseAt=Date.now();clearInterval(window._timerInt);updateTimerControls()};
+window.formResetWorkoutTimer=function(){if(!window._workoutStart)return;if(!confirm('Antrenman sayacı sıfırlansın mı? Girdiğin kg, tekrar ve set kayıtları silinmez.'))return;clearInterval(window._timerInt);window._workoutStart=null;window._workoutPausedTotal=0;window._workoutPauseAt=null;const t=document.getElementById('workoutTimer');if(t)t.textContent='00:00:00';updateTimerControls()};
+function timerControlsHTML(){return `<div class="form-workout-controls"><div class="form-workout-clock"><div class="muted">Antrenman süresi</div><div id="workoutTimer" class="timer">${window._workoutStart?elapsedText():'00:00:00'}</div></div><div class="form-timer-actions"><button id="formTimerStart" class="primary form-timer-start" onclick="formStartWorkout()">Başlat</button><button id="formTimerPause" class="form-timer-stop" onclick="formPauseWorkout()">Durdur</button><button class="form-timer-reset" onclick="formResetWorkoutTimer()">Sıfırla</button></div></div>`}
+function updateTimerControls(){const s=document.getElementById('formTimerStart'),p=document.getElementById('formTimerPause');if(s){s.textContent=!window._workoutStart?'Başlat':pausedNow()?'Devam Et':'Çalışıyor';s.disabled=!!window._workoutStart&&!pausedNow()}if(p)p.disabled=!window._workoutStart||pausedNow();const t=document.getElementById('workoutTimer');if(t)t.textContent=window._workoutStart?elapsedText():'00:00:00'}
+function installTimerControls(){const old=document.getElementById('startWorkoutBtn');if(!old)return;const row=old.closest('.card')?.querySelector('div[style*="justify-content:space-between"]');if(!row)return;row.outerHTML=timerControlsHTML();updateTimerControls();if(window._workoutStart&&!pausedNow())startTimerTick()}
+
+const baseRenderWorkout=window.renderWorkout;
+window.renderWorkout=function(){baseRenderWorkout();setTimeout(()=>{installTimerControls();applyWorkoutFocus()},0)};
+const baseStartWorkout=window.startWorkout;
+window.startWorkout=function(){formStartWorkout()};
+const baseSaveWorkout=window.saveWorkout;
+window.saveWorkout=function(){baseSaveWorkout();window._workoutPausedTotal=0;window._workoutPauseAt=null;focusByPlan[selectedPlan()]=0};
+
+document.addEventListener('change',e=>{if(e.target?.matches?.('.set-done input[type="checkbox"]'))setTimeout(()=>{const sel=document.getElementById('formExerciseSelector');if(sel)sel.outerHTML=selectorHTML()},30)});
+setTimeout(()=>{if(document.querySelector('.workout-card')){installTimerControls();applyWorkoutFocus()}},50);
+})();
