@@ -5,7 +5,7 @@
   let out=await r.text();
   out=out.replace('content="width=device-width, initial-scale=1.0"','content="width=device-width,initial-scale=1,viewport-fit=cover"');
   const head='<link rel="stylesheet" href="/upgrade.css?v=160"><link rel="stylesheet" href="/nutrition-plus.css?v=160"><link rel="stylesheet" href="/workout-plus.css?v=160"><link rel="stylesheet" href="/coach-plus.css?v=160"><link rel="stylesheet" href="/mobile-fix.css?v=160"><link rel="icon" href="/assets/form-logo.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/api/icon"><link rel="manifest" href="/manifest.webmanifest">';
-  const body='<scr'+'ipt src="/upgrade.js?v=160"></scr'+'ipt><scr'+'ipt src="/nutrition-plus.js?v=160"></scr'+'ipt><scr'+'ipt src="/workout-plus.js?v=160"></scr'+'ipt><scr'+'ipt src="/coach-plus.js?v=160"></scr'+'ipt><scr'+'ipt src="/mobile-fix.js?v=160"></scr'+'ipt>';
+  const body='<scr'+'ipt src="/upgrade.js?v=160"></scr'+'ipt><scr'+'ipt src="/nutrition-plus.js?v=160"></scr'+'ipt><scr'+'ipt src="/workout-plus.js?v=160"></scr'+'ipt><scr'+'ipt src="/coach-plus.js?v=160"></scr'+'ipt><scr'+'ipt src="/coach-refine.js?v=160"></scr'+'ipt><scr'+'ipt src="/mobile-fix.js?v=160"></scr'+'ipt>';
   out=out.replace('</head>',head+'</head>');
   out=out.replace('</body>',body+'</body>');
   out=out.replace("const APP_VERSION='1.4.0'","const APP_VERSION='1.6.0'");
