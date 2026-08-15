@@ -1,4 +1,4 @@
-const CACHE='form-v1.6.7';
+const CACHE='form-v1.6.8';
 const PRECACHE=[
   '/',
   '/index.html',
@@ -23,6 +23,7 @@ const PRECACHE=[
   '/mobile-fix.js',
   '/exercise-library.css',
   '/exercise-library.js',
+  '/schedule-v2.js',
   '/assets/form-logo.svg',
   '/icon-192.png',
   '/icon-512.png'
