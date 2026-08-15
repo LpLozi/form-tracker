@@ -39,7 +39,7 @@ function applySchedule(){
  db.program=FT_PROGRAM;
  db.settings=db.settings||{};
  db.settings.trainingDays={...FT_SCHEDULE};
- db.settings.scheduleVersion='2.0';
+ db.settings.scheduleVersion='2.1';
  if(typeof save==='function')save();
 }
 applySchedule();
@@ -50,10 +50,12 @@ function restScreen(){
 }
 
 const HYROX_SEGMENTS=[
- ['run1','Koşu','800 m',''],['ski','SkiErg','500 m',''],['run2','Koşu','800 m',''],['push','Sled Push','25 m','kg'],
- ['run3','Koşu','800 m',''],['pull','Sled Pull','25 m','kg'],['run4','Koşu','800 m',''],['row','RowErg','500 m',''],
- ['run5','Koşu','800 m',''],['carry','Farmer Carry','100 m','kg'],['lunge','Sandbag Walking Lunge','40–50 m','kg'],['wall','Wall Ball','30–50 tekrar','kg']
+ ['run1','Koşu','500 m','',''],['ski','SkiErg','500 m','',''],['run2','Koşu','500 m','',''],['push','Sled Push','25 m','kg','120 kg toplam (sled dahil)'],
+ ['run3','Koşu','500 m','',''],['pull','Sled Pull','25 m','kg','80 kg toplam (sled dahil)'],['run4','Koşu','500 m','',''],['row','RowErg','500 m','',''],
+ ['run5','Koşu','500 m','',''],['carry','Farmer Carry','100 m','kg','2 × 24 kg'],['lunge','Sandbag Walking Lunge','40–50 m','kg','20 kg'],['wall','Wall Ball','30–50 tekrar','kg','6 kg']
 ];
+const HYROX_WEIGHT_PLACEHOLDER={push:'120',pull:'80',carry:'24',lunge:'20',wall:'6'};
+function hyroxWeightLabel(key){if(key==='carry')return'Tek el (kg)';if(key==='push'||key==='pull')return'Toplam ağırlık (kg)';return'Ağırlık (kg)'}
 function hyroxDraft(){try{return JSON.parse(localStorage.getItem('formHyroxDraft')||'{}')}catch{return {}}}
 function saveHyroxDraftField(k,field,v){const d=hyroxDraft();d[k]=d[k]||{};d[k][field]=Number(v)||0;localStorage.setItem('formHyroxDraft',JSON.stringify(d))}
 window.ftHyroxField=saveHyroxDraftField;
@@ -63,7 +65,7 @@ function hyroxTick(){clearInterval(window._timerInt);window._timerInt=setInterva
 window.ftStartHyrox=function(){if(!window._workoutStart)window._workoutStart=Date.now();renderWorkout()};
 window.ftSaveHyrox=function(){
  const draft=hyroxDraft(),date=localDate(),durationSec=hyroxElapsed();
- const segments=HYROX_SEGMENTS.map(([key,name,target,unit])=>({key,name,target,unit,seconds:Number(draft[key]?.seconds)||0,weight:Number(draft[key]?.weight)||0}));
+ const segments=HYROX_SEGMENTS.map(([key,name,target,unit,recommendation])=>({key,name,target,unit,recommendation,seconds:Number(draft[key]?.seconds)||0,weight:Number(draft[key]?.weight)||0}));
  db.workouts.push({date,type:'HYROX Hybrid',durationSec,exercises:[],hyrox:{segments},cardio:null});
  if(typeof save==='function')save();
  localStorage.removeItem('formHyroxDraft');window._workoutStart=null;clearInterval(window._timerInt);
@@ -72,9 +74,9 @@ window.ftSaveHyrox=function(){
 };
 function renderHyrox(){
  const draft=hyroxDraft(),running=!!window._workoutStart;
- app.innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;gap:14px;align-items:center"><div><div class="muted">${DAY_NAMES[new Date().getDay()]} • Bugünün antrenmanı</div><h2 style="margin:4px 0">HYROX Hybrid</h2><div class="muted">Program otomatik seçildi • yaklaşık 35–50 dk</div></div><div style="text-align:right"><div class="muted">Süre</div><div id="workoutTimer" class="timer">${running?hyroxClock():'00:00:00'}</div></div></div><button class="primary" style="margin-top:14px;width:100%" onclick="ftStartHyrox()" ${running?'disabled':''}>${running?'Antrenman başladı':'Antrenmanı başlat'}</button></div>
- <div style="margin-top:14px">${HYROX_SEGMENTS.map(([key,name,target,unit],i)=>`<div class="workout-card"><div class="exercise-head"><div><strong>${i+1}. ${name}</strong><div class="muted">Hedef: ${target}</div></div><span class="pill">${name==='Koşu'?'Compromised run':'İstasyon'}</span></div><div class="row"><div><label>Süre (sn)</label><input type="number" inputmode="numeric" min="0" value="${draft[key]?.seconds||''}" placeholder="örn. 180" onchange="ftHyroxField('${key}','seconds',this.value)"></div>${unit?`<div><label>Ağırlık (kg)</label><input type="number" inputmode="decimal" step="0.5" min="0" value="${draft[key]?.weight||''}" placeholder="kg" onchange="ftHyroxField('${key}','weight',this.value)"></div>`:''}</div></div>`).join('')}</div>
- <div class="card"><div class="note">İlk blokta amaç yarış simülasyonu değil: tempoyu koru, istasyonları teknik olarak temiz tamamla ve koşuya döndüğünde nabzı kontrol et.</div><button class="primary" style="width:100%;margin-top:12px" onclick="ftSaveHyrox()">Antrenmanı bitir ve kaydet</button></div>`;
+ app.innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;gap:14px;align-items:center"><div><div class="muted">${DAY_NAMES[new Date().getDay()]} • Bugünün antrenmanı</div><h2 style="margin:4px 0">HYROX Hybrid</h2><div class="muted">1–2. hafta başlangıç bloğu • koşular 500 m • yaklaşık 30–45 dk</div></div><div style="text-align:right"><div class="muted">Süre</div><div id="workoutTimer" class="timer">${running?hyroxClock():'00:00:00'}</div></div></div><button class="primary" style="margin-top:14px;width:100%" onclick="ftStartHyrox()" ${running?'disabled':''}>${running?'Antrenman başladı':'Antrenmanı başlat'}</button></div>
+ <div style="margin-top:14px">${HYROX_SEGMENTS.map(([key,name,target,unit,recommendation],i)=>`<div class="workout-card"><div class="exercise-head"><div><strong>${i+1}. ${name}</strong><div class="muted">Hedef: ${target}</div>${recommendation?`<div class="muted" style="margin-top:3px"><b>Tavsiye ağırlık:</b> ${recommendation}</div>`:''}</div><span class="pill">${name==='Koşu'?'Compromised run':'İstasyon'}</span></div><div class="row"><div><label>Süre (sn)</label><input type="number" inputmode="numeric" min="0" value="${draft[key]?.seconds||''}" placeholder="örn. 180" onchange="ftHyroxField('${key}','seconds',this.value)"></div>${unit?`<div><label>${hyroxWeightLabel(key)}</label><input type="number" inputmode="decimal" step="0.5" min="0" value="${draft[key]?.weight||''}" placeholder="${HYROX_WEIGHT_PLACEHOLDER[key]||'kg'}" onchange="ftHyroxField('${key}','weight',this.value)"></div>`:''}</div></div>`).join('')}</div>
+ <div class="card"><div class="note"><b>İlk 2 hafta:</b> amaç yarış simülasyonu değil. Tüm bloğu kontrollü biçimde tamamla; koşuya döndüğünde nabzı toparlayabiliyor ol. 2 hafta sonunda tamamlanabilirlik ve sürelerine göre koşu mesafesini artıracağız.</div><button class="primary" style="width:100%;margin-top:12px" onclick="ftSaveHyrox()">Antrenmanı bitir ve kaydet</button></div>`;
  if(running)hyroxTick();
 }
 
