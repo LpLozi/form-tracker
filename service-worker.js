@@ -1,4 +1,4 @@
-const CACHE='form-v1.6.8';
+const CACHE='form-v1.6.9';
 const PRECACHE=[
   '/',
   '/index.html',
@@ -24,6 +24,8 @@ const PRECACHE=[
   '/exercise-library.css',
   '/exercise-library.js',
   '/schedule-v2.js',
+  '/ft-workout-smart.js',
+  '/ft-life-smart.js',
   '/assets/form-logo.svg',
   '/icon-192.png',
   '/icon-512.png'
