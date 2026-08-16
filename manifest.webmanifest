@@ -1,6 +1,6 @@
 {
-  "name": "FORM — Kişisel Spor & Beslenme Takibi",
-  "short_name": "FORM",
+  "name": "ONUR FORM — Kişisel Spor & Beslenme Takibi",
+  "short_name": "ONUR FORM",
   "description": "Kişisel antrenman, beslenme ve gelişim takip uygulaması",
   "start_url": "./index.html",
   "scope": "./",
