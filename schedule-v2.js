@@ -1,6 +1,6 @@
 /* FORM schedule v2 — calendar-driven workouts + HYROX hybrid day */
 (()=>{
-const FT_SCHEDULE={1:'Upper Strength',2:'Lower Strength',4:'Upper Hypertrophy',6:'HYROX Hybrid'};
+const FT_SCHEDULE={0:'Upper Strength',2:'Lower Strength',4:'Upper Hypertrophy',5:'HYROX Hybrid'};
 const FT_PROGRAM={
  'Upper Strength':[
   {name:'Incline Chest Press',sets:3,reps:'6-8',rir:'1-2'},
@@ -39,7 +39,7 @@ function applySchedule(){
  db.program=FT_PROGRAM;
  db.settings=db.settings||{};
  db.settings.trainingDays={...FT_SCHEDULE};
- db.settings.scheduleVersion='2.1';
+ db.settings.scheduleVersion='2.2';
  if(typeof save==='function')save();
 }
 applySchedule();
