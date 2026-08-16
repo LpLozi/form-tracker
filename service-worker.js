@@ -1,4 +1,4 @@
-const CACHE='onur-form-v1.6.12-1';
+const CACHE='onur-form-v1.6.12-2';
 const PRECACHE=[
   '/',
   '/index.html',
@@ -27,6 +27,7 @@ const PRECACHE=[
   '/ft-workout-smart.js',
   '/ft-life-smart.js',
   '/ft-smart-hotfix.js',
+  '/onur-analytics.js',
   '/assets/form-logo.svg',
   '/icon-192.png',
   '/icon-512.png'
