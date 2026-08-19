@@ -1,4 +1,4 @@
-/* FORM schedule v2 — calendar-driven workouts + HYROX hybrid day */
+/* FORM schedule v3 — scheduled days auto-select, programs remain accessible every day */
 (()=>{
 const FT_SCHEDULE={0:'Upper Strength',2:'Lower Strength',4:'Upper Hypertrophy',5:'HYROX Hybrid'};
 const FT_PROGRAM={
@@ -35,19 +35,15 @@ const FT_PROGRAM={
 const DAY_NAMES=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
 function localDate(){const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`}
 function todayWorkout(){return FT_SCHEDULE[new Date().getDay()]||null}
+function nextWorkout(){for(let i=1;i<=7;i++){const d=new Date();d.setDate(d.getDate()+i);const p=FT_SCHEDULE[d.getDay()];if(p)return{day:DAY_NAMES[d.getDay()],plan:p}}return null}
 function applySchedule(){
  db.program=FT_PROGRAM;
  db.settings=db.settings||{};
  db.settings.trainingDays={...FT_SCHEDULE};
- db.settings.scheduleVersion='2.2';
+ db.settings.scheduleVersion='3.0';
  if(typeof save==='function')save();
 }
 applySchedule();
-
-function restScreen(){
- const next=[];for(let i=1;i<=7;i++){const d=new Date();d.setDate(d.getDate()+i);const p=FT_SCHEDULE[d.getDay()];if(p){next.push({day:DAY_NAMES[d.getDay()],plan:p});break}}
- app.innerHTML=`<div class="card" style="text-align:center;padding:28px"><div class="muted" style="font-weight:800;letter-spacing:.08em">BUGÜN</div><h2 style="margin:8px 0">Dinlenme / toparlanma günü</h2><p class="muted">Bugün planlı ağırlık veya HYROX antrenmanı yok. Yürüyüş ve mobilite serbest; ekstra antrenman eklemiyoruz.</p>${next.length?`<div class="note" style="margin-top:16px;text-align:left"><b>Sıradaki:</b> ${next[0].day} • ${next[0].plan}</div>`:''}</div>`;
-}
 
 const HYROX_SEGMENTS=[
  ['run1','Koşu','500 m','',''],['ski','SkiErg','500 m','',''],['run2','Koşu','500 m','',''],['push','Sled Push','25 m','kg','120 kg toplam (sled dahil)'],
@@ -74,7 +70,7 @@ window.ftSaveHyrox=function(){
 };
 function renderHyrox(){
  const draft=hyroxDraft(),running=!!window._workoutStart;
- app.innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;gap:14px;align-items:center"><div><div class="muted">${DAY_NAMES[new Date().getDay()]} • Bugünün antrenmanı</div><h2 style="margin:4px 0">HYROX Hybrid</h2><div class="muted">1–2. hafta başlangıç bloğu • koşular 500 m • yaklaşık 30–45 dk</div></div><div style="text-align:right"><div class="muted">Süre</div><div id="workoutTimer" class="timer">${running?hyroxClock():'00:00:00'}</div></div></div><button class="primary" style="margin-top:14px;width:100%" onclick="ftStartHyrox()" ${running?'disabled':''}>${running?'Antrenman başladı':'Antrenmanı başlat'}</button></div>
+ app.innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;gap:14px;align-items:center"><div><div class="muted">${DAY_NAMES[new Date().getDay()]} • HYROX</div><h2 style="margin:4px 0">HYROX Hybrid</h2><div class="muted">1–2. hafta başlangıç bloğu • koşular 500 m • yaklaşık 30–45 dk</div></div><div style="text-align:right"><div class="muted">Süre</div><div id="workoutTimer" class="timer">${running?hyroxClock():'00:00:00'}</div></div></div><button class="primary" style="margin-top:14px;width:100%" onclick="ftStartHyrox()" ${running?'disabled':''}>${running?'Antrenman başladı':'Antrenmanı başlat'}</button></div>
  <div style="margin-top:14px">${HYROX_SEGMENTS.map(([key,name,target,unit,recommendation],i)=>`<div class="workout-card"><div class="exercise-head"><div><strong>${i+1}. ${name}</strong><div class="muted">Hedef: ${target}</div>${recommendation?`<div class="muted" style="margin-top:3px"><b>Tavsiye ağırlık:</b> ${recommendation}</div>`:''}</div><span class="pill">${name==='Koşu'?'Compromised run':'İstasyon'}</span></div><div class="row"><div><label>Süre (sn)</label><input type="number" inputmode="numeric" min="0" value="${draft[key]?.seconds||''}" placeholder="örn. 180" onchange="ftHyroxField('${key}','seconds',this.value)"></div>${unit?`<div><label>${hyroxWeightLabel(key)}</label><input type="number" inputmode="decimal" step="0.5" min="0" value="${draft[key]?.weight||''}" placeholder="${HYROX_WEIGHT_PLACEHOLDER[key]||'kg'}" onchange="ftHyroxField('${key}','weight',this.value)"></div>`:''}</div></div>`).join('')}</div>
  <div class="card"><div class="note"><b>İlk 2 hafta:</b> amaç yarış simülasyonu değil. Tüm bloğu kontrollü biçimde tamamla; koşuya döndüğünde nabzı toparlayabiliyor ol. 2 hafta sonunda tamamlanabilirlik ve sürelerine göre koşu mesafesini artıracağız.</div><button class="primary" style="width:100%;margin-top:12px" onclick="ftSaveHyrox()">Antrenmanı bitir ve kaydet</button></div>`;
  if(running)hyroxTick();
@@ -83,13 +79,27 @@ function renderHyrox(){
 const baseRenderWorkout=renderWorkout;
 renderWorkout=function(){
  const planned=todayWorkout();
- if(!planned){window._wk=null;return restScreen()}
- window._wk=planned;
- if(planned==='HYROX Hybrid')return renderHyrox();
+ const requested=window._wk;
+ const chosen=(requested&&FT_PROGRAM[requested])?requested:(planned||Object.keys(FT_PROGRAM)[0]);
+ window._wk=chosen;
+ if(chosen==='HYROX Hybrid')return renderHyrox();
  baseRenderWorkout();
  const date=document.getElementById('workoutDate');if(date)date.value=localDate();
- const sel=[...document.querySelectorAll('select')].find(s=>[...s.options].some(o=>o.value===planned||o.text===planned));
- if(sel){sel.value=planned;sel.disabled=true;const box=sel.closest('div');if(box){const lab=box.querySelector('label');if(lab)lab.textContent='Bugünün antrenmanı';sel.style.display='none';const badge=document.createElement('div');badge.className='note';badge.style.marginTop='4px';badge.innerHTML=`<b>${DAY_NAMES[new Date().getDay()]}:</b> ${planned}`;box.appendChild(badge)}}
+ const sel=[...document.querySelectorAll('select')].find(s=>[...s.options].some(o=>FT_PROGRAM[o.value]||FT_PROGRAM[o.text]));
+ if(sel){
+   sel.disabled=false;sel.style.display='';
+   const options=[...sel.options];
+   const match=options.find(o=>o.value===chosen||o.text===chosen);if(match)sel.value=match.value;
+   const box=sel.closest('div');if(box){
+     const lab=box.querySelector('label');if(lab)lab.textContent=planned?'Bugünün programı':'Programı seç';
+     box.querySelector('.ft-schedule-badge')?.remove();
+     const badge=document.createElement('div');badge.className='note ft-schedule-badge';badge.style.marginTop='4px';
+     const n=nextWorkout();
+     badge.innerHTML=planned?`<b>${DAY_NAMES[new Date().getDay()]}:</b> ${planned}<br><span class="muted">Planlı program otomatik açıldı; istersen başka programı da seçebilirsin.</span>`:`<b>Bugün planlı antrenman yok.</b><br><span class="muted">Programlar yine açık. İstediğin antrenmanı seçip başlayabilirsin.${n?` Sıradaki planlı gün: ${n.day} • ${n.plan}.`:''}</span>`;
+     box.appendChild(badge);
+   }
+   sel.onchange=()=>{const opt=sel.options[sel.selectedIndex];window._wk=FT_PROGRAM[sel.value]?sel.value:opt.text;renderWorkout()};
+ }
 };
 
 const baseRenderPanel=renderPanel;
@@ -97,8 +107,11 @@ renderPanel=function(){
  baseRenderPanel();
  const planned=todayWorkout();
  setTimeout(()=>{
-  const buttons=[...document.querySelectorAll('button')].filter(b=>b.textContent.trim().includes('Antrenmana başla'));
-  buttons.forEach(b=>{if(planned){b.textContent=`${planned} antrenmanını aç`;b.disabled=false}else{b.textContent='Bugün dinlenme günü';b.disabled=true}});
+  const buttons=[...document.querySelectorAll('button')].filter(b=>b.textContent.trim().includes('Antrenmana başla')||b.textContent.includes('antrenmanını aç')||b.textContent.includes('dinlenme günü'));
+  buttons.forEach(b=>{
+    b.disabled=false;
+    b.textContent=planned?`${planned} antrenmanını aç`:'Programları aç';
+  });
  },0);
 };
 
