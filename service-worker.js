@@ -1,4 +1,4 @@
-const CACHE='form-v1.6.15';
+const CACHE='form-v1.6.16';
 const PRECACHE=[
   '/',
   '/index.html',
@@ -26,6 +26,7 @@ const PRECACHE=[
   '/exercise-library.css',
   '/exercise-library.js',
   '/schedule-v2.js',
+  '/hyrox-day-selector.js',
   '/ft-workout-smart.js',
   '/ft-life-smart.js',
   '/ft-smart-hotfix.js',
