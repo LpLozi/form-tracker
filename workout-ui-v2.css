@@ -1,0 +1,19 @@
+/* FORM workout UI v2 — salon-first compact interface */
+@media(max-width:900px){
+  /* iOS Safari: number/select fields below 16px trigger focus zoom */
+  .workout-card input,.workout-card select,.workout-card textarea,.ftiq input,.ft-library-modal input,.ft-library-modal select{font-size:16px!important}
+  .form-workout-controls{display:flex!important;align-items:center!important;gap:10px!important;margin-top:8px!important;padding-top:8px!important}
+  .form-workout-clock{flex:1;display:flex;align-items:center;gap:8px}.form-workout-clock .muted{margin:0!important;font-size:11px!important}.form-workout-clock .timer{font-size:20px!important;white-space:nowrap}
+  .form-timer-actions{display:flex!important;gap:6px!important}.form-timer-actions button{min-width:0!important;padding:8px 10px!important;font-size:12px!important}.form-timer-reset{display:none!important}
+  .ft-schedule-badge{display:none!important}
+  .form-exercise-focus{margin-top:8px!important}.form-current-banner{padding:9px 11px!important;border-radius:13px!important;margin-bottom:5px!important;box-shadow:none!important}.form-current-banner span{font-size:8px!important}.form-current-banner b{font-size:14px!important}.form-workout-progress{height:4px!important;margin-bottom:7px!important}
+  .form-exercise-selector{padding:8px!important;border-radius:14px!important;margin-top:8px!important}.form-selector-head{margin-bottom:5px!important}.form-selector-head span{display:none}.form-selector-list{display:flex!important;gap:6px!important;overflow-x:auto!important;padding-bottom:2px}.form-selector-btn{flex:0 0 auto!important;width:auto!important;max-width:190px!important;grid-template-columns:25px minmax(90px,1fr)!important;padding:7px 8px!important}.form-selector-state{display:none!important}.form-selector-num{width:24px!important;height:24px!important}.form-selector-name b{font-size:11px!important}.form-selector-name small{font-size:9px!important}
+  .form-set-stepper{width:auto!important;display:flex!important;gap:4px!important}.form-set-stepper button{padding:6px 8px!important;font-size:11px!important}.form-set-stepper span{font-size:10px!important}
+  .set-type-head,.set-type-cell{display:none!important}.set-table{min-width:0!important;width:100%!important}.set-table input{min-width:0!important;padding:9px 5px!important}
+  .form-exercise-nav{margin:7px 0 9px!important}.form-exercise-nav button{min-height:38px!important;padding:8px!important;font-size:12px!important}
+  .workout-card{padding:12px!important;margin-top:8px!important}.workout-card .exercise-head{gap:6px!important}.workout-card .exercise-head strong{font-size:17px!important}
+  #ftIQCoach{display:none!important}
+  .ft-workout-quickbar{display:flex;gap:7px;overflow-x:auto;margin:8px 0;padding-bottom:2px}.ft-workout-quickbar button{flex:0 0 auto;padding:8px 11px;border-radius:11px;border:1px solid #dfe6ef;background:#fff;color:#344054;font-weight:800;font-size:12px}.ft-workout-quickbar .primary{background:#2563eb;color:#fff;border-color:#2563eb}
+  .ft-inline-history{margin:7px 0;padding:9px 10px;background:#f7f9fc;border:1px solid #e4eaf2;border-radius:12px;font-size:12px;color:#667085}.ft-inline-history b{color:#253047}.ft-inline-history-actions{display:flex;gap:6px;margin-top:6px}.ft-inline-history-actions button{padding:6px 8px;font-size:11px}
+  .ft-workout-compact-picker{display:flex;align-items:center;gap:7px;margin-bottom:7px}.ft-workout-compact-picker label{font-size:11px;font-weight:800;color:#667085;white-space:nowrap}.ft-workout-compact-picker select{font-size:16px!important;padding:8px 10px!important;min-width:0;flex:1}
+}
