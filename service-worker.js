@@ -1,4 +1,4 @@
-const CACHE='form-v1.7.5';
+const CACHE='form-v1.7.6';
 const PRECACHE=[
   '/',
   '/index.html',
@@ -23,6 +23,7 @@ const PRECACHE=[
   '/ft-training-v3.css',
   '/ft-training-v3.js',
   '/ft-ios-input-flow.js',
+  '/ft-library-hotfix.js',
   '/coach-plus.css',
   '/coach-plus.js',
   '/coach-refine.js',
