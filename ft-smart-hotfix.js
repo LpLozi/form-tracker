@@ -1,6 +1,6 @@
 /* FORM smart feature hotfixes */
 (()=>{'use strict';
-const CANON={1:'Upper Strength',2:'Lower Strength',4:'Upper Hypertrophy',6:'HYROX Hybrid'};
+const CANON={0:'Upper Strength',2:'Lower Strength',4:'Upper Hypertrophy',5:'HYROX Hybrid'};
 const CATCH='formCatchupWorkoutV1';
 const localKey=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 function catchup(){try{return JSON.parse(localStorage.getItem(CATCH)||'null')}catch{return null}}
