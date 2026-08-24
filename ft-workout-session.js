@@ -5,19 +5,28 @@ const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'null')}catch{r
 const write=d=>{try{localStorage.setItem(KEY,JSON.stringify(d));return true}catch{return false}};
 const clear=()=>{try{localStorage.removeItem(KEY)}catch{}};
 const val=id=>document.getElementById(id)?.value??'';
+function hasData(d){return !!d?.exercises?.some(e=>e.note||e.sets?.some(s=>s.weight||s.reps||s.rir||s.done))}
 function capture(){
   if(typeof current!=='undefined'&&current!=='Antrenman')return null;
   const tables=[...document.querySelectorAll('[id^="settable_"]')]; if(!tables.length)return null;
   const prev=read()||{}, type=window._wk||prev.type||'', date=val('workoutDate')||prev.date||'', exercises=[];
   tables.forEach((tb,i)=>{const sets=[...tb.querySelectorAll('tbody tr')].map((tr,j)=>({weight:val(`kg_${i}_${j}`),reps:val(`rep_${i}_${j}`),rir:val(`rir_${i}_${j}`),done:!!document.getElementById(`done_${i}_${j}`)?.checked}));exercises.push({sets,note:val(`note_${i}`)})});
   const cardio={type:val('cardioType'),minutes:val('cardioMin'),speed:val('cardioSpeed'),incline:val('cardioIncline'),intensity:val('cardioIntensity')};
-  const startedAt=window._workoutStart||prev.startedAt||null;
-  const d={version:1,type,date,startedAt,updatedAt:Date.now(),exercises,cardio,rpe:val('ftSessionRpe')}; write(d); return d;
+  const samePlan=!prev.type||prev.type===type;
+  const startedAt=window._workoutStart||(samePlan?prev.startedAt:null)||null;
+  const d={version:1,type,date,startedAt,updatedAt:Date.now(),exercises,cardio,rpe:val('ftSessionRpe')};
+  // Merely browsing another plan must not destroy a meaningful in-progress
+  // draft from the previous plan. The new plan takes ownership only after the
+  // user actually enters data or starts a workout there.
+  if(prev.type&&prev.type!==type&&hasData(prev)&&!hasData(d)&&!window._workoutStart)return prev;
+  write(d); return d;
 }
-function hasData(d){return !!d?.exercises?.some(e=>e.note||e.sets?.some(s=>s.weight||s.reps||s.rir||s.done))}
 function restore(){
   const d=read(); if(!d||!document.querySelector('[id^="settable_"]'))return;
-  if(d.type&&window._wk!==d.type){window._wk=d.type;setTimeout(()=>window.renderWorkout?.(),0);return}
+  // A persisted draft is recovery data, not navigation state. Never force
+  // window._wk back to the draft plan after the user intentionally selects a
+  // different program; that caused Upper selections to snap back to Lower.
+  if(d.type&&window._wk!==d.type)return;
   if(d.startedAt&&!window._workoutStart)window._workoutStart=d.startedAt;
   if(d.date&&document.getElementById('workoutDate'))document.getElementById('workoutDate').value=d.date;
   d.exercises?.forEach((e,i)=>{const tb=document.querySelector(`#settable_${i} tbody`);if(!tb)return;while(tb.rows.length<(e.sets?.length||0))window.addExtraSet?.(i);e.sets?.forEach((s,j)=>{const a=document.getElementById(`kg_${i}_${j}`),b=document.getElementById(`rep_${i}_${j}`),c=document.getElementById(`rir_${i}_${j}`),x=document.getElementById(`done_${i}_${j}`);if(a)a.value=s.weight??'';if(b)b.value=s.reps??'';if(c)c.value=s.rir??'';if(x)x.checked=!!s.done});const n=document.getElementById(`note_${i}`);if(n)n.value=e.note||''});
@@ -32,5 +41,5 @@ const oldSave=window.saveWorkout; if(oldSave)window.saveWorkout=function(...a){l
 if(window.registerAfterWorkoutRender)window.registerAfterWorkoutRender(afterRender);else{const rw=window.renderWorkout;if(rw)window.renderWorkout=function(...a){const o=rw.apply(this,a);setTimeout(afterRender,0);return o}};
 document.addEventListener('input',e=>{if(e.target?.closest?.('#app'))setTimeout(capture,0)},true);document.addEventListener('change',e=>{if(e.target?.closest?.('#app'))setTimeout(capture,0)},true);
 window.addEventListener('pagehide',capture);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')capture()});setInterval(()=>{if(typeof current!=='undefined'&&current==='Antrenman')capture()},1500);
-const d=read();if(d?.startedAt&&!window._workoutStart)window._workoutStart=d.startedAt;setTimeout(()=>{try{if(typeof current!=='undefined'&&current==='Antrenman')afterRender();else injectSavedBadge()}catch{}},120);
+const d=read();if(d?.startedAt&&d.type===window._wk&&!window._workoutStart)window._workoutStart=d.startedAt;setTimeout(()=>{try{if(typeof current!=='undefined'&&current==='Antrenman')afterRender();else injectSavedBadge()}catch{}},120);
 })();
