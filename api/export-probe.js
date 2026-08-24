@@ -1,2 +1,0 @@
-const fs=require('fs'); const path=require('path');
-module.exports=(req,res)=>{const cwd=process.cwd(); let files=[]; function walk(d,depth=0){if(depth>2)return; for(const n of fs.readdirSync(d)){const p=path.join(d,n); try{const s=fs.statSync(p); if(s.isDirectory()){if(!['node_modules','.git'].includes(n))walk(p,depth+1)} else files.push(path.relative(cwd,p));}catch{}}} walk(cwd); res.status(200).json({cwd,files:files.slice(0,500)});};
