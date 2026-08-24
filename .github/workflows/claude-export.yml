@@ -1,0 +1,21 @@
+name: Claude Export
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package repository
+        run: |
+          rm -rf .git
+          zip -r form-tracker-repo.zip . -x "form-tracker-repo.zip" ".github/workflows/claude-export.yml"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: form-tracker-repo
+          path: form-tracker-repo.zip
+          retention-days: 1
