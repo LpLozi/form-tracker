@@ -57,7 +57,7 @@ function decorate(){
   if(!first)return;
   addPicker(root,first);compactHero(first);controls(first);tick();
 }
-const base=window.renderWorkout;
-if(typeof base==='function')window.renderWorkout=function(){const r=base.apply(this,arguments);setTimeout(decorate,0);return r};
+if(window.registerAfterWorkoutRender)window.registerAfterWorkoutRender(decorate);
+else{const base=window.renderWorkout;if(typeof base==='function')window.renderWorkout=function(){const r=base.apply(this,arguments);setTimeout(decorate,0);return r}}
 setTimeout(decorate,80);
 })();

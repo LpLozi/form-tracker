@@ -37,11 +37,24 @@ function localDate(){const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+
 function todayWorkout(){return FT_SCHEDULE[new Date().getDay()]||null}
 function nextWorkout(){for(let i=1;i<=7;i++){const d=new Date();d.setDate(d.getDate()+i);const p=FT_SCHEDULE[d.getDay()];if(p)return{day:DAY_NAMES[d.getDay()],plan:p}}return null}
 function applySchedule(){
- db.program=FT_PROGRAM;
  db.settings=db.settings||{};
- db.settings.trainingDays={...FT_SCHEDULE};
- db.settings.scheduleVersion='3.0';
- if(typeof save==='function')save();
+ // One-time install of the v3 schedule/program. Previously this ran
+ // unconditionally on EVERY page load and reset db.program + trainingDays,
+ // wiping any user customization (including permanent exercise swaps).
+ // The scheduleVersion marker was already being written here but never
+ // read; it is now the migration guard.
+ const fresh=!db.program||!Object.keys(db.program).length;
+ if(fresh||db.settings.scheduleVersion!=='3.0'){
+  db.program=db.program||{};
+  // Merge rather than replace: install any plan the user doesn't have yet,
+  // but never overwrite a plan that already exists (it may be customized).
+  Object.keys(FT_PROGRAM).forEach(k=>{if(!db.program[k])db.program[k]=FT_PROGRAM[k]});
+  if(!db.settings.trainingDays||!Object.keys(db.settings.trainingDays).length||db.settings.scheduleVersion!=='3.0'){
+   db.settings.trainingDays={...FT_SCHEDULE};
+  }
+  db.settings.scheduleVersion='3.0';
+  if(typeof save==='function')save();
+ }
 }
 applySchedule();
 
@@ -76,6 +89,20 @@ function renderHyrox(){
  if(running)hyroxTick();
 }
 
+// IMPORTANT — load-order dependency: this file must load AFTER workout-plus.js
+// and BEFORE ft-render-hooks.js (see index.html script order).
+// This wrapper makes a full render-routing decision (HYROX Hybrid vs a normal
+// plan) and can skip the underlying render entirely (renderHyrox() instead of
+// baseRenderWorkout()). The before/after hook registry in ft-render-hooks.js
+// only wraps around a fixed base render — it cannot skip it — so this routing
+// logic cannot itself be expressed as a registerBeforeWorkoutRender /
+// registerAfterWorkoutRender hook. Instead it wraps the workout-plus.js base
+// directly and loads BEFORE ft-render-hooks.js, so it becomes part of the one
+// base function that the hook registry then wraps exactly once. Every other
+// workout-screen file (coach-plus.js, ft-strong-keypad.js, etc.) registers
+// through the hook system and therefore still fires correctly for every
+// workout type, HYROX included, because their hooks run around this whole
+// routing function rather than being bypassed by it.
 const baseRenderWorkout=renderWorkout;
 renderWorkout=function(){
  const planned=todayWorkout();

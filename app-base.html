@@ -82,12 +82,24 @@ const defaultProgram={
 };
 function seed(){return {version:APP_VERSION,profile:{name:'Hüseyin',height:181,startWeight:93,startDate:'2026-07-19'},targets:{kcal:2400,protein:190,carb:230,fat:70,fiber:30,water:4},foods:defaultFoods,meals:{},workouts:[],measurements:[{date:'2026-07-19',weight:93,waist:'',navel:'',neck:'',chest:'',armR:'',armL:'',thighR:'',thighL:'',note:'Başlangıç'}],photos:[],habits:{},program:defaultProgram,settings:{trainingDays:{1:'Upper A',2:'Lower A',4:'Upper B',6:'Lower B'},foodUsage:{}}};}
 let db=JSON.parse(localStorage.getItem('formDB')||'null')||seed();
+// One-time safety backup, taken before the migrateDB() fix below runs for the first time.
+// Lets us recover the exact pre-fix state if anything looks wrong after this update.
+try{
+  if(!localStorage.getItem('formDB_backup_pre_program_fix')){
+    localStorage.setItem('formDB_backup_pre_program_fix',localStorage.getItem('formDB')||'null');
+  }
+}catch(_e){}
 function migrateDB(){
   db.profile=db.profile||seed().profile; db.targets={...seed().targets,...(db.targets||{})}; db.meals=db.meals||{}; db.workouts=db.workouts||[]; db.measurements=db.measurements||[]; db.photos=db.photos||[]; db.habits=db.habits||{}; db.settings=db.settings||{}; db.settings.foodUsage=db.settings.foodUsage||{};
   const existing=new Map((db.foods||[]).map(f=>[(f.name||'').toLocaleLowerCase('tr-TR'),f]));
   defaultFoods.forEach(f=>{if(!existing.has(f.name.toLocaleLowerCase('tr-TR'))) (db.foods=db.foods||[]).push(f)});
   db.foods=(db.foods||defaultFoods).map(f=>({...f,category:f.category||'Diğer'}));
-  db.program=defaultProgram; db.settings.trainingDays={1:'Upper A',2:'Lower A',4:'Upper B',6:'Lower B'}; db.version=APP_VERSION; save();
+  // FIX (was: unconditional overwrite on every load, wiping any custom program/training-day edits):
+  // only seed program/trainingDays defaults the first time they don't exist yet.
+  // Existing user customizations (including permanent exercise swaps) are never touched again after that.
+  if(!db.program)db.program=defaultProgram;
+  if(!db.settings.trainingDays)db.settings.trainingDays={1:'Upper A',2:'Lower A',4:'Upper B',6:'Lower B'};
+  db.version=APP_VERSION; save();
 }
 migrateDB();
 function save(){localStorage.setItem('formDB',JSON.stringify(db));}

@@ -15,6 +15,7 @@ function weekStart(){const d=new Date();d.setHours(0,0,0,0);const delta=(d.getDa
 function refineMuscles(){const grid=document.querySelector('.coach-muscle-grid');if(!grid)return;const start=weekStart(),done={},planned={};Object.values(db.settings?.trainingDays||{}).forEach(plan=>(db.program?.[plan]||[]).forEach(raw=>{const e=typeof normalizeExercise==='function'?normalizeExercise(raw):raw,m=muscle(e.name);if(m!=='other')planned[m]=(planned[m]||0)+Number(e.sets||0)}));(db.workouts||[]).filter(w=>w.date>=start).forEach(w=>(w.exercises||[]).forEach(e=>{const m=muscle(e.name);if(m!=='other')done[m]=(done[m]||0)+allSets(e).length}));grid.innerHTML=Object.keys(planned).map(m=>{const p=planned[m]||0,d=done[m]||0,pc=p?Math.min(110,d/p*100):0;return `<div><div><span>${labels[m]}</span><b>${d}/${p} set</b></div><i><em style="width:${pc}%"></em></i></div>`}).join('')}
 window.coachApplyLoad=function(i,w){const card=document.querySelectorAll('.workout-card')[i];if(!card)return;card.querySelectorAll('tbody tr').forEach(tr=>{const type=tr.querySelector('.set-type-select')?.value||'working';if(type==='working'){const input=tr.querySelector('input[id^="kg_"]');if(input)input.value=w}});if(typeof toast==='function')toast(`${f(w,1)} kg ana setlere uygulandı`)};
 function refine(){refineRecommendations();refineMuscles()}
-const base=window.renderWorkout;if(base)window.renderWorkout=function(){base();setTimeout(refine,90)};
+if(window.registerAfterWorkoutRender)window.registerAfterWorkoutRender(refine);
+else{const base=window.renderWorkout;if(base)window.renderWorkout=function(){base();setTimeout(refine,90)}}
 setTimeout(()=>{if(document.querySelector('.workout-card'))refine()},120);
 })();
