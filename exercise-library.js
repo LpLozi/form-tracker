@@ -70,8 +70,20 @@ const ftSaveSessions=()=>localStorage.setItem(SESSION_KEY_FT,JSON.stringify(ftSe
 function ftPlan(){try{return window._wk||Object.keys(db.program||{})[0]||''}catch(_e){return''}}
 function ftObjectRow(raw,index){let r;try{r=typeof normalizeExercise==='function'?normalizeExercise(raw):(Array.isArray(raw)?{name:raw[0],sets:raw[1],reps:raw[2],rir:''}:raw)}catch(_e){r=Array.isArray(raw)?{name:raw[0],sets:raw[1],reps:raw[2],rir:''}:raw}return {...clone(r),__origin:Number.isInteger(index)?index:null}}
 function ftCleanRow(r){const {__origin,__library,...clean}=r;return clean}
-function ftEnsureSession(p){if(!ftSessions[p]){const base=(db.program?.[p]||[]).map((r,i)=>ftObjectRow(r,i));ftSessions[p]={base:clone(base),rows:clone(base),updatedAt:Date.now()};ftSaveSessions()}return ftSessions[p]}
-function ftHydrate(p){const s=ftSessions[p];if(s&&db?.program?.[p])db.program[p]=clone(s.rows)}
+function ftIsToday(ts){if(!ts)return false;const a=new Date(ts),b=new Date();return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
+function ftEnsureSession(p){
+  // A non-permanent ("bugüne özel") swap must only apply to today's workout.
+  // ftSessions persists in localStorage across reloads, so without this check
+  // a same-day-only swap could silently keep re-applying on future days too.
+  if(ftSessions[p]&&!ftIsToday(ftSessions[p].updatedAt)){delete ftSessions[p];ftSaveSessions()}
+  if(!ftSessions[p]){const base=(db.program?.[p]||[]).map((r,i)=>ftObjectRow(r,i));ftSessions[p]={base:clone(base),rows:clone(base),updatedAt:Date.now()};ftSaveSessions()}
+  return ftSessions[p]
+}
+function ftHydrate(p){
+  const s=ftSessions[p];
+  if(s&&!ftIsToday(s.updatedAt)){delete ftSessions[p];ftSaveSessions();return}
+  if(s&&db?.program?.[p])db.program[p]=clone(s.rows)
+}
 function ftApplyPick(ex){const p=ftPlan();if(!p)return;const s=ftEnsureSession(p),row={name:ex.name,sets:ex.sets,reps:ex.reps,rir:ex.rir,__origin:null,__library:true};if(modalMode==='add'){if(modalPermanent){s.base.push({...ftCleanRow(row),__origin:s.base.length});row.__origin=s.base.length-1}s.rows.push(row);modalIndex=s.rows.length-1}else{const old=s.rows[modalIndex];row.__origin=Number.isInteger(old?.__origin)?old.__origin:null;s.rows[modalIndex]=row;if(modalPermanent){if(Number.isInteger(row.__origin))s.base[row.__origin]={...ftCleanRow(row),__origin:row.__origin};else{s.base.push({...ftCleanRow(row),__origin:s.base.length});s.rows[modalIndex].__origin=s.base.length-1}}}s.updatedAt=Date.now();ftSaveSessions();db.program[p]=clone(s.rows);if(modalPermanent)try{save()}catch(_e){}window.ftLibraryClose();renderWorkout();setTimeout(()=>window.formSelectExercise?.(Math.min(modalIndex,s.rows.length-1)),80);try{toast(modalMode==='add'?'Hareket antrenmana eklendi':'Hareket değiştirildi')}catch(_e){}}
 function ftSkip(){const p=ftPlan(),s=ftEnsureSession(p),i=currentExerciseIndex();if(s.rows.length<=1){try{toast('Antrenmanda en az bir hareket kalmalı')}catch(_e){}return}s.rows.splice(i,1);s.updatedAt=Date.now();ftSaveSessions();db.program[p]=clone(s.rows);renderWorkout();setTimeout(()=>window.formSelectExercise?.(Math.min(i,s.rows.length-1)),80);try{toast('Hareket yalnızca bu antrenmanda atlandı')}catch(_e){}}
 function ftInstallControls(){if(!document.querySelector('.workout-card')||document.getElementById('ftlibWorkoutTools'))return;const a=document.getElementById('formCurrentExercise')||document.querySelector('.form-workout-controls');if(!a)return;const d=document.createElement('div');d.id='ftlibWorkoutTools';d.className='ftlib-workout-tools';d.innerHTML='<div><b>Antrenmanı esnek düzenle</b><span>Programın bozulmadan bugüne özel hareket ekle veya değiştir.</span></div><div class="ftlib-tool-actions"><button class="primary" type="button" onclick="ftLibraryOpenAdd()">＋ Hareket ekle</button><button class="secondary" type="button" onclick="ftLibraryOpenReplace()">Değiştir</button><button class="ftlib-skip" type="button" onclick="ftLibrarySkipCurrent()">Bugün atla</button></div>';a.insertAdjacentElement('afterend',d)}
@@ -86,7 +98,38 @@ function aylinApplyPick(ex){const p=aylinPlan(),s=aylinEnsureSession(p),target=`
 function aylinSkip(){const p=aylinPlan(),s=aylinEnsureSession(p),i=currentExerciseIndex();if(s.rows.length<=1){alert('Antrenmanda en az bir hareket kalmalı.');return}s.rows.splice(i,1);s.updatedAt=Date.now();aylinSaveSessions();plans[p]=aylinRuntimeRows(s.rows);renderWorkout();setTimeout(()=>window.aylinSelectExercise?.(Math.min(i,s.rows.length-1)),80)}
 function aylinInstallControls(){if(!document.getElementById('workoutExercises')||document.getElementById('ftlibWorkoutTools'))return;const a=document.getElementById('aylinCurrentExercise')||document.querySelector('.workout-top');if(!a)return;const d=document.createElement('div');d.id='ftlibWorkoutTools';d.className='ftlib-workout-tools';d.innerHTML='<div><b>Antrenmanı esnek düzenle</b><span>Enerjin ve o günkü hissine göre hareket ekleyebilir veya değiştirebilirsin.</span></div><div class="ftlib-tool-actions"><button class="primary" type="button" onclick="ftLibraryOpenAdd()">＋ Hareket ekle</button><button class="secondary" type="button" onclick="ftLibraryOpenReplace()">Değiştir</button><button class="ftlib-skip" type="button" onclick="ftLibrarySkipCurrent()">Bugün atla</button></div>';a.insertAdjacentElement('afterend',d)}
 let env={ft:false,ay:false};try{env.ft=typeof db!=='undefined'&&!!db?.program}catch(_e){}try{env.ay=typeof plans!=='undefined'&&typeof activeWorkout!=='undefined'}catch(_e){}
-if(env.ft)try{const rawSave=window.save;if(typeof rawSave==='function'&&!rawSave.__ftlibWrapped){const wrapped=function(...args){const backups={};try{Object.keys(ftSessions).forEach(p=>{if(db?.program?.[p]&&ftSessions[p]?.base){backups[p]=db.program[p];db.program[p]=ftSessions[p].base.map(ftCleanRow)}});return rawSave.apply(this,args)}finally{Object.keys(backups).forEach(p=>db.program[p]=backups[p])}};wrapped.__ftlibWrapped=true;window.save=wrapped}Object.keys(ftSessions).forEach(ftHydrate);const br=window.renderWorkout;window.renderWorkout=function(...args){ftHydrate(ftPlan());const out=br.apply(this,args);setTimeout(ftInstallControls,45);return out};const bs=window.saveWorkout;window.saveWorkout=function(...args){const p=ftPlan(),had=!!ftSessions[p],out=bs.apply(this,args);if(had){const s=ftSessions[p];if(s?.base)db.program[p]=s.base.map(ftCleanRow);delete ftSessions[p];ftSaveSessions();try{save()}catch(_e){}setTimeout(()=>renderWorkout(),20)}return out};setTimeout(()=>{ftHydrate(ftPlan());ftInstallControls()},80)}catch(e){console.warn('FT exercise library adapter',e)}
-if(env.ay)try{Object.keys(aylinPrograms).forEach(p=>{if(plans[p])plans[p]=clone(aylinPrograms[p])});Object.keys(aylinSessions).forEach(aylinHydrate);const br=window.renderWorkout;window.renderWorkout=function(...args){aylinHydrate(aylinPlan());const out=br.apply(this,args);setTimeout(aylinInstallControls,45);return out};const bf=window.finishWorkout;window.finishWorkout=function(...args){const p=aylinPlan(),had=!!aylinSessions[p],base=had?clone(aylinSessions[p].base):null,out=bf.apply(this,args);if(had){delete aylinSessions[p];aylinSaveSessions();if(aylinPrograms[p])plans[p]=clone(aylinPrograms[p]);else if(base)plans[p]=aylinRuntimeRows(base);setTimeout(()=>renderWorkout(),20)}return out};setTimeout(()=>{aylinHydrate(aylinPlan());aylinInstallControls()},80)}catch(e){console.warn('Aylin exercise library adapter',e)}
+// NOTE: registerBeforeWorkoutRender/registerAfterWorkoutRender come from ft-render-hooks.js,
+// which must load before this file. Falls back to the old direct-wrap style if it's ever missing.
+const ftRegisterBefore=window.registerBeforeWorkoutRender,ftRegisterAfter=window.registerAfterWorkoutRender;
+if(env.ft)try{
+  const rawSave=window.save;
+  if(typeof rawSave==='function'&&!rawSave.__ftlibWrapped){
+    const wrapped=function(...args){const backups={};try{Object.keys(ftSessions).forEach(p=>{if(db?.program?.[p]&&ftSessions[p]?.base){backups[p]=db.program[p];db.program[p]=ftSessions[p].base.map(ftCleanRow)}});return rawSave.apply(this,args)}finally{Object.keys(backups).forEach(p=>db.program[p]=backups[p])}};
+    wrapped.__ftlibWrapped=true;window.save=wrapped;
+  }
+  Object.keys(ftSessions).forEach(ftHydrate);
+  const bs=window.saveWorkout;
+  window.saveWorkout=function(...args){const p=ftPlan(),had=!!ftSessions[p],out=bs.apply(this,args);if(had){const s=ftSessions[p];if(s?.base)db.program[p]=s.base.map(ftCleanRow);delete ftSessions[p];ftSaveSessions();try{save()}catch(_e){}setTimeout(()=>renderWorkout(),20)}return out};
+  if(ftRegisterBefore&&ftRegisterAfter){
+    ftRegisterBefore(()=>ftHydrate(ftPlan()));
+    ftRegisterAfter(ftInstallControls);
+  }else{
+    const br=window.renderWorkout;window.renderWorkout=function(...args){ftHydrate(ftPlan());const out=br.apply(this,args);setTimeout(ftInstallControls,45);return out};
+  }
+  setTimeout(()=>{ftHydrate(ftPlan());ftInstallControls()},80);
+}catch(e){console.warn('FT exercise library adapter',e)}
+if(env.ay)try{
+  Object.keys(aylinPrograms).forEach(p=>{if(plans[p])plans[p]=clone(aylinPrograms[p])});
+  Object.keys(aylinSessions).forEach(aylinHydrate);
+  const bf=window.finishWorkout;
+  window.finishWorkout=function(...args){const p=aylinPlan(),had=!!aylinSessions[p],base=had?clone(aylinSessions[p].base):null,out=bf.apply(this,args);if(had){delete aylinSessions[p];aylinSaveSessions();if(aylinPrograms[p])plans[p]=clone(aylinPrograms[p]);else if(base)plans[p]=aylinRuntimeRows(base);setTimeout(()=>renderWorkout(),20)}return out};
+  if(ftRegisterBefore&&ftRegisterAfter){
+    ftRegisterBefore(()=>aylinHydrate(aylinPlan()));
+    ftRegisterAfter(aylinInstallControls);
+  }else{
+    const br=window.renderWorkout;window.renderWorkout=function(...args){aylinHydrate(aylinPlan());const out=br.apply(this,args);setTimeout(aylinInstallControls,45);return out};
+  }
+  setTimeout(()=>{aylinHydrate(aylinPlan());aylinInstallControls()},80);
+}catch(e){console.warn('Aylin exercise library adapter',e)}
 window.ftLibraryPick=function(name){const ex=EXERCISES.find(x=>x.name===name);if(!ex)return;if(env.ft)ftApplyPick(ex);else if(env.ay)aylinApplyPick(ex)};window.ftLibrarySkipCurrent=function(){if(env.ft)ftSkip();else if(env.ay)aylinSkip()};
 })();

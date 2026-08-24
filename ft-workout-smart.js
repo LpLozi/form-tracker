@@ -30,7 +30,13 @@ function applyCatch(){const c=get(CATCH,null);if(c?.date===key()&&window.FT_SCHE
 window.ftIQCatch=(d,p)=>{set(CATCH,{date:key(),sourceDate:d,plan:p});if(window.FT_SCHEDULE)window.FT_SCHEDULE[new Date().getDay()]=p;window._wk=p;renderWorkout()};window.ftIQSkip=d=>{const x=get(MISS,{});x[d]='skip';set(MISS,x);render()};
 function missedCard(){const x=missed().at(-1);return x?`<div class="ftiq" id="ftIQMiss"><span class="ftiq-chip">KAÇIRILAN ANTRENMAN</span><h3 style="margin-top:7px">${x.date} • ${esc(x.plan)}</h3><div class="ftiq-mini">Programı otomatik kaydırmıyorum.</div><div class="ftiq-actions" style="margin-top:10px"><button class="primary" onclick="ftIQCatch('${x.date}','${x.plan.replace(/'/g,"\\'")}')">Bugün telafi et</button><button class="secondary" onclick="ftIQSkip('${x.date}')">Aynen devam</button></div></div>`:''}
 function panel(){if(document.getElementById('ftIQPanel'))return;const h=document.createElement('div');h.id='ftIQPanel';h.innerHTML=missedCard()+loadCard()+hyrox();app.appendChild(h)}
-const rw=window.renderWorkout;window.renderWorkout=function(...a){applyCatch();const o=rw.apply(this,a);setTimeout(()=>{injectWorkout();if(!document.querySelector('.workout-card')&&window._wk!=='HYROX Hybrid'){const d=document.createElement('div');d.innerHTML=missedCard();if(d.innerHTML.trim())app.prepend(d)}},30);return o};
+function ftWorkoutSmartAfterRender(){injectWorkout();if(!document.querySelector('.workout-card')&&window._wk!=='HYROX Hybrid'){const d=document.createElement('div');d.innerHTML=missedCard();if(d.innerHTML.trim())app.prepend(d)}}
+if(window.registerBeforeWorkoutRender&&window.registerAfterWorkoutRender){
+  window.registerBeforeWorkoutRender(applyCatch);
+  window.registerAfterWorkoutRender(ftWorkoutSmartAfterRender);
+}else{
+  const rw=window.renderWorkout;window.renderWorkout=function(...a){applyCatch();const o=rw.apply(this,a);setTimeout(ftWorkoutSmartAfterRender,30);return o};
+}
 const sw=window.saveWorkout;window.saveWorkout=function(...a){const r=+document.getElementById('ftSessionRpe')?.value||null,n=(db.workouts||[]).length,o=sw.apply(this,a);if(db.workouts.length>n){const w=db.workouts.at(-1);if(r)w.rpe=Math.max(1,Math.min(10,r));w.smartVersion=VER;const c=get(CATCH,null);if(c?.date===w.date){localStorage.removeItem(CATCH);const d=get(MISS,{});d[c.sourceDate]='caught-up';set(MISS,d)}save()}return o};
 if(window.ftSaveHyrox){const sh=window.ftSaveHyrox;window.ftSaveHyrox=function(...a){const r=+document.getElementById('ftSessionRpe')?.value||null,n=db.workouts.length,o=sh.apply(this,a);if(db.workouts.length>n){const w=db.workouts.at(-1);if(r)w.rpe=Math.max(1,Math.min(10,r));w.smartVersion=VER;save()}return o}}
 const rp=window.renderPanel;window.renderPanel=function(...a){const o=rp.apply(this,a);setTimeout(panel,20);return o};setTimeout(()=>{try{if(current==='Panel')panel();if(current==='Antrenman')injectWorkout()}catch{}},80);

@@ -38,6 +38,7 @@ function miniDate(){const input=document.getElementById('workoutDate');if(!input
 function markReadiness(){[...document.querySelectorAll('.card')].forEach(c=>{const t=c.textContent||'';if(t.includes('Hazırlık verisi'))c.classList.add('ft-readiness-compact');if(t.includes('Antrenmanı esnek düzenle'))c.classList.add('ft-flex-edit-bottom')})}
 function reorder(){const selector=document.querySelector('.form-exercise-selector');const flex=document.querySelector('.ft-flex-edit-bottom');const nav=document.querySelector('.form-exercise-nav');if(selector&&nav&&selector.previousElementSibling!==nav)nav.insertAdjacentElement('afterend',selector);if(flex&&selector)selector.insertAdjacentElement('afterend',flex)}
 function enhance(){compactPicker();miniDate();markReadiness();addInlineHistory();addGlassNotes();reorder()}
-const base=window.renderWorkout;window.renderWorkout=function(){base();setTimeout(enhance,50)};
+if(window.registerAfterWorkoutRender)window.registerAfterWorkoutRender(enhance);
+else{const base=window.renderWorkout;window.renderWorkout=function(){base();setTimeout(enhance,50)}}
 setTimeout(enhance,140);
 })();
