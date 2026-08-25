@@ -38,9 +38,16 @@ function todayWorkout(){return FT_SCHEDULE[new Date().getDay()]||null}
 function nextWorkout(){for(let i=1;i<=7;i++){const d=new Date();d.setDate(d.getDate()+i);const p=FT_SCHEDULE[d.getDay()];if(p)return{day:DAY_NAMES[d.getDay()],plan:p}}return null}
 function applySchedule(){
  db.settings=db.settings||{};
+ // One-time install of the v3 schedule/program. Previously this ran
+ // unconditionally on EVERY page load and reset db.program + trainingDays,
+ // wiping any user customization (including permanent exercise swaps).
+ // The scheduleVersion marker was already being written here but never
+ // read; it is now the migration guard.
  const fresh=!db.program||!Object.keys(db.program).length;
  if(fresh||db.settings.scheduleVersion!=='3.0'){
   db.program=db.program||{};
+  // Merge rather than replace: install any plan the user doesn't have yet,
+  // but never overwrite a plan that already exists (it may be customized).
   Object.keys(FT_PROGRAM).forEach(k=>{if(!db.program[k])db.program[k]=FT_PROGRAM[k]});
   if(!db.settings.trainingDays||!Object.keys(db.settings.trainingDays).length||db.settings.scheduleVersion!=='3.0'){
    db.settings.trainingDays={...FT_SCHEDULE};
@@ -74,12 +81,20 @@ window.ftSaveHyrox=function(){
  if(typeof toast==='function')toast('HYROX Hybrid kaydedildi');
  if(typeof render==='function')render();
 };
+// Single shared program-selector markup + wiring, used on BOTH the normal
+// workout screen and the HYROX screen, so there is exactly one place that
+// owns the <select>, its onchange, and the window._wk it writes — including
+// while HYROX Hybrid is the active program. (Previously HYROX Hybrid had no
+// selector from this file at all; a second, separate selector lived in
+// hyrox-day-selector.js with its own onchange and its own hardcoded
+// day/program list, duplicating this state instead of sharing it.)
 function programSelectorHTML(chosen){
  return `<div><label>Antrenman</label><select id="ftProgramSelect">${Object.keys(FT_PROGRAM).map(k=>`<option value="${k}" ${k===chosen?'selected':''}>${k}</option>`).join('')}</select></div>`;
 }
 function wireProgramSelector(chosen,planned){
- const sel=document.getElementById('ftProgramSelect');
+ const sel=document.getElementById('ftProgramSelect')||[...document.querySelectorAll('#app select')].find(s=>[...s.options].some(o=>FT_PROGRAM[o.value]||FT_PROGRAM[o.text]));
  if(!sel)return;
+ if(!sel.id)sel.id='ftProgramSelect';
  const box=sel.closest('div');
  if(box){
    box.querySelector('.ft-schedule-badge')?.remove();
@@ -89,6 +104,10 @@ function wireProgramSelector(chosen,planned){
    box.appendChild(badge);
  }
  sel.onchange=()=>{
+   // The one and only place an explicit program switch originates. Flagging
+   // it lets other before/after-render hooks (catch-up restore, schedule
+   // auto-suggest, etc.) know a real user action just happened, so they must
+   // not silently steer window._wk somewhere else on this or a later render.
    window.__ftUserPickedProgram=true;
    window._wk=sel.value;
    renderWorkout();
@@ -103,6 +122,20 @@ function renderHyrox(){
  if(running)hyroxTick();
 }
 
+// IMPORTANT — load-order dependency: this file must load AFTER workout-plus.js
+// and BEFORE ft-render-hooks.js (see index.html script order).
+// This wrapper makes a full render-routing decision (HYROX Hybrid vs a normal
+// plan) and can skip the underlying render entirely (renderHyrox() instead of
+// baseRenderWorkout()). The before/after hook registry in ft-render-hooks.js
+// only wraps around a fixed base render — it cannot skip it — so this routing
+// logic cannot itself be expressed as a registerBeforeWorkoutRender /
+// registerAfterWorkoutRender hook. Instead it wraps the workout-plus.js base
+// directly and loads BEFORE ft-render-hooks.js, so it becomes part of the one
+// base function that the hook registry then wraps exactly once. Every other
+// workout-screen file (coach-plus.js, ft-strong-keypad.js, etc.) registers
+// through the hook system and therefore still fires correctly for every
+// workout type, HYROX included, because their hooks run around this whole
+// routing function rather than being bypassed by it.
 const baseRenderWorkout=renderWorkout;
 renderWorkout=function(){
  const planned=todayWorkout();
@@ -112,8 +145,8 @@ renderWorkout=function(){
  if(chosen==='HYROX Hybrid')return renderHyrox();
  baseRenderWorkout();
  const date=document.getElementById('workoutDate');if(date)date.value=localDate();
- const sel=document.getElementById('ftProgramSelect');
- if(sel){
+ const sel=document.getElementById('ftProgramSelect')||[...document.querySelectorAll('#app select')].find(s=>[...s.options].some(o=>FT_PROGRAM[o.value]||FT_PROGRAM[o.text]));
+ if(sel){if(!sel.id)sel.id='ftProgramSelect';
    sel.disabled=false;sel.style.display='';
    const match=[...sel.options].find(o=>o.value===chosen);if(match)sel.value=match.value;
    const box=sel.closest('div');
