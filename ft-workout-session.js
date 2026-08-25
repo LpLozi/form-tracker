@@ -17,7 +17,14 @@ function capture(){
 function hasData(d){return !!d?.exercises?.some(e=>e.note||e.sets?.some(s=>s.weight||s.reps||s.rir||s.done))}
 function restore(){
   const d=read(); if(!d||!document.querySelector('[id^="settable_"]'))return;
-  if(d.type&&window._wk!==d.type){window._wk=d.type;setTimeout(()=>window.renderWorkout?.(),0);return}
+  // The draft is input-field storage for whichever program is CURRENTLY selected —
+  // it must never act as navigation state. If the draft was captured for a
+  // different program than the one on screen right now, that's just a stale
+  // draft from a previous session on a different plan: skip restoring its set
+  // data (there's nothing to restore against this program's exercises) instead
+  // of forcing window._wk back and re-rendering, which used to silently undo
+  // whatever program the user had just explicitly selected.
+  if(d.type&&window._wk!==d.type)return;
   if(d.startedAt&&!window._workoutStart)window._workoutStart=d.startedAt;
   if(d.date&&document.getElementById('workoutDate'))document.getElementById('workoutDate').value=d.date;
   d.exercises?.forEach((e,i)=>{const tb=document.querySelector(`#settable_${i} tbody`);if(!tb)return;while(tb.rows.length<(e.sets?.length||0))window.addExtraSet?.(i);e.sets?.forEach((s,j)=>{const a=document.getElementById(`kg_${i}_${j}`),b=document.getElementById(`rep_${i}_${j}`),c=document.getElementById(`rir_${i}_${j}`),x=document.getElementById(`done_${i}_${j}`);if(a)a.value=s.weight??'';if(b)b.value=s.reps??'';if(c)c.value=s.rir??'';if(x)x.checked=!!s.done});const n=document.getElementById(`note_${i}`);if(n)n.value=e.note||''});
