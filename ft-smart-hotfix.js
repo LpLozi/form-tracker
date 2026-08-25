@@ -1,12 +1,16 @@
 /* FORM smart feature hotfixes */
 (()=>{'use strict';
-const CANON={1:'Upper Strength',2:'Lower Strength',4:'Upper Hypertrophy',6:'HYROX Hybrid'};
+// Previously kept its own hardcoded day->program map ("CANON") as a copy of
+// schedule-v2.js's FT_SCHEDULE. The two drifted apart (different weekday
+// numbers for the same programs), so post-catch-up navigation could jump to
+// a day/plan combination that didn't match the real schedule. schedule-v2.js
+// is the single source of truth for the day->program schedule now — this
+// file just reads window.FT_SCHEDULE directly instead of duplicating it.
 const CATCH='formCatchupWorkoutV1';
 const localKey=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 function catchup(){try{return JSON.parse(localStorage.getItem(CATCH)||'null')}catch{return null}}
 function restore(){
- const day=new Date().getDay(),plan=CANON[day]||null;
- if(window.FT_SCHEDULE){if(plan)window.FT_SCHEDULE[day]=plan;else delete window.FT_SCHEDULE[day]}
+ const day=new Date().getDay(),plan=(window.FT_SCHEDULE||{})[day]||null;
  window._wk=plan;
  setTimeout(()=>{try{renderWorkout()}catch{}},0);
 }
