@@ -34,7 +34,16 @@ function afterRender(){restore();injectSavedBadge()}
 const oldStart=window.startWorkout;if(oldStart)window.startWorkout=function(...a){const o=oldStart.apply(this,a);setTimeout(capture,0);return o};
 const oldSave=window.saveWorkout;if(oldSave)window.saveWorkout=function(...a){const savingType=window._wk||'';let d=capture()||readType(savingType);if(!window._workoutStart&&hasData(d)){window._workoutStart=d?.startedAt||Date.now();d={...(d||{}),startedAt:window._workoutStart};write(d)}const n=(db.workouts||[]).length,o=oldSave.apply(this,a);if((db.workouts||[]).length>n){const w=db.workouts.at(-1);clearType(savingType);try{localStorage.setItem(LAST,JSON.stringify({at:Date.now(),date:w?.date,type:w?.type}))}catch{}setTimeout(injectSavedBadge,0)}else capture();return o};
 if(window.registerAfterWorkoutRender)window.registerAfterWorkoutRender(afterRender);else{const rw=window.renderWorkout;if(rw)window.renderWorkout=function(...a){const o=rw.apply(this,a);setTimeout(afterRender,0);return o}};
-document.addEventListener('input',e=>{if(e.target?.closest?.('#app'))setTimeout(capture,0)},true);document.addEventListener('change',e=>{if(e.target?.closest?.('#app'))setTimeout(capture,0)},true);
+document.addEventListener('input',e=>{if(e.target?.closest?.('#app'))setTimeout(capture,0)},true);
+document.addEventListener('change',e=>{
+  if(!e.target?.closest?.('#app'))return;
+  // Program select renders a completely new workout immediately in its own
+  // change handler. Capture the OLD program synchronously in capture phase,
+  // before that render destroys the current input DOM. A delayed capture here
+  // would read the new blank screen and lose the values the user just entered.
+  if(e.target.id==='ftProgramSelect'||e.target.closest?.('.ft-plan-select-shell')){capture();return;}
+  setTimeout(capture,0);
+},true);
 window.addEventListener('pagehide',capture);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')capture()});setInterval(()=>{if(typeof current!=='undefined'&&current==='Antrenman')capture()},1500);
 setTimeout(()=>{try{if(typeof current!=='undefined'&&current==='Antrenman')afterRender();else injectSavedBadge()}catch{}},120);
 })();
