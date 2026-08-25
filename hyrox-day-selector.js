@@ -1,11 +1,10 @@
-/* FORM HYROX day/program selector + compact controls */
+/* FORM HYROX compact controls (timer, hero layout). Program selection itself
+ * is owned exclusively by schedule-v2.js's <select onchange>/window._wk —
+ * this file used to also inject a second, independent "#ftHyroxDaySelect"
+ * program picker with its own change handler and its own hardcoded
+ * day->program list, which was a second place a program switch could
+ * originate from. Removed in favor of the one real selector. */
 (()=>{'use strict';
-const DAYS=[
-  ['Pazar','Upper Strength'],
-  ['Salı','Lower Strength'],
-  ['Perşembe','Upper Hypertrophy'],
-  ['Cuma','HYROX Hybrid']
-];
 let pausedAt=0;
 function fmt(sec){sec=Math.max(0,Math.floor(sec||0));const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;return [h,m,s].map(x=>String(x).padStart(2,'0')).join(':')}
 function elapsed(){if(!window._workoutStart)return 0;const end=pausedAt||Date.now();return Math.max(0,Math.floor((end-window._workoutStart)/1000))}
@@ -22,16 +21,6 @@ window.ftPauseHyrox=function(){
   const e=document.getElementById('workoutTimer');if(e)e.textContent=fmt(elapsed());
   decorate();
 };
-function addPicker(root,first){
-  if(root.querySelector('#ftHyroxDayPicker'))return;
-  const box=document.createElement('div');
-  box.id='ftHyroxDayPicker';
-  box.className='card';
-  box.style.cssText='padding:8px 10px;margin-bottom:8px;border-radius:14px';
-  box.innerHTML=`<div style="display:flex;align-items:center;gap:8px"><label style="margin:0;font-size:9px;font-weight:850;white-space:nowrap">ANTRENMAN</label><select id="ftHyroxDaySelect" style="margin:0;min-width:0;flex:1;padding:7px 28px 7px 9px;font-size:13px;height:36px">${DAYS.map(([day,plan])=>`<option value="${plan}" ${window._wk===plan?'selected':''}>${day} • ${plan}</option>`).join('')}</select></div>`;
-  first.insertAdjacentElement('beforebegin',box);
-  box.querySelector('#ftHyroxDaySelect').addEventListener('change',e=>{window._wk=e.target.value;window.renderWorkout?.()});
-}
 function compactHero(first){
   const h2=first.querySelector('h2');
   if(h2)h2.style.cssText='margin:2px 0 3px;font-size:20px;line-height:1.05;letter-spacing:-.02em';
@@ -55,7 +44,7 @@ function decorate(){
   if(!root)return;
   const first=root.querySelector('.card');
   if(!first)return;
-  addPicker(root,first);compactHero(first);controls(first);tick();
+  compactHero(first);controls(first);tick();
 }
 if(window.registerAfterWorkoutRender)window.registerAfterWorkoutRender(decorate);
 else{const base=window.renderWorkout;if(typeof base==='function')window.renderWorkout=function(){const r=base.apply(this,arguments);setTimeout(decorate,0);return r}}
