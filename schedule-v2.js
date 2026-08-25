@@ -38,16 +38,9 @@ function todayWorkout(){return FT_SCHEDULE[new Date().getDay()]||null}
 function nextWorkout(){for(let i=1;i<=7;i++){const d=new Date();d.setDate(d.getDate()+i);const p=FT_SCHEDULE[d.getDay()];if(p)return{day:DAY_NAMES[d.getDay()],plan:p}}return null}
 function applySchedule(){
  db.settings=db.settings||{};
- // One-time install of the v3 schedule/program. Previously this ran
- // unconditionally on EVERY page load and reset db.program + trainingDays,
- // wiping any user customization (including permanent exercise swaps).
- // The scheduleVersion marker was already being written here but never
- // read; it is now the migration guard.
  const fresh=!db.program||!Object.keys(db.program).length;
  if(fresh||db.settings.scheduleVersion!=='3.0'){
   db.program=db.program||{};
-  // Merge rather than replace: install any plan the user doesn't have yet,
-  // but never overwrite a plan that already exists (it may be customized).
   Object.keys(FT_PROGRAM).forEach(k=>{if(!db.program[k])db.program[k]=FT_PROGRAM[k]});
   if(!db.settings.trainingDays||!Object.keys(db.settings.trainingDays).length||db.settings.scheduleVersion!=='3.0'){
    db.settings.trainingDays={...FT_SCHEDULE};
@@ -81,28 +74,35 @@ window.ftSaveHyrox=function(){
  if(typeof toast==='function')toast('HYROX Hybrid kaydedildi');
  if(typeof render==='function')render();
 };
+function programSelectorHTML(chosen){
+ return `<div><label>Antrenman</label><select id="ftProgramSelect">${Object.keys(FT_PROGRAM).map(k=>`<option value="${k}" ${k===chosen?'selected':''}>${k}</option>`).join('')}</select></div>`;
+}
+function wireProgramSelector(chosen,planned){
+ const sel=document.getElementById('ftProgramSelect');
+ if(!sel)return;
+ const box=sel.closest('div');
+ if(box){
+   box.querySelector('.ft-schedule-badge')?.remove();
+   const badge=document.createElement('div');badge.className='note ft-schedule-badge';badge.style.marginTop='4px';
+   const n=nextWorkout();
+   badge.innerHTML=planned?`<b>${DAY_NAMES[new Date().getDay()]}:</b> ${planned}<br><span class="muted">Planlı program otomatik açıldı; istersen başka programı da seçebilirsin.</span>`:`<b>Bugün planlı antrenman yok.</b><br><span class="muted">Programlar yine açık. İstediğin antrenmanı seçip başlayabilirsin.${n?` Sıradaki planlı gün: ${n.day} • ${n.plan}.`:''}</span>`;
+   box.appendChild(badge);
+ }
+ sel.onchange=()=>{
+   window.__ftUserPickedProgram=true;
+   window._wk=sel.value;
+   renderWorkout();
+ };
+}
 function renderHyrox(){
- const draft=hyroxDraft(),running=!!window._workoutStart;
- app.innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;gap:14px;align-items:center"><div><div class="muted">${DAY_NAMES[new Date().getDay()]} • HYROX</div><h2 style="margin:4px 0">HYROX Hybrid</h2><div class="muted">1–2. hafta başlangıç bloğu • koşular 500 m • yaklaşık 30–45 dk</div></div><div style="text-align:right"><div class="muted">Süre</div><div id="workoutTimer" class="timer">${running?hyroxClock():'00:00:00'}</div></div></div><button class="primary" style="margin-top:14px;width:100%" onclick="ftStartHyrox()" ${running?'disabled':''}>${running?'Antrenman başladı':'Antrenmanı başlat'}</button></div>
+ const draft=hyroxDraft(),running=!!window._workoutStart,planned=todayWorkout();
+ app.innerHTML=`<div class="card">${programSelectorHTML('HYROX Hybrid')}<div style="display:flex;justify-content:space-between;gap:14px;align-items:center;margin-top:12px"><div><div class="muted">${DAY_NAMES[new Date().getDay()]} • HYROX</div><h2 style="margin:4px 0">HYROX Hybrid</h2><div class="muted">1–2. hafta başlangıç bloğu • koşular 500 m • yaklaşık 30–45 dk</div></div><div style="text-align:right"><div class="muted">Süre</div><div id="workoutTimer" class="timer">${running?hyroxClock():'00:00:00'}</div></div></div><button class="primary" style="margin-top:14px;width:100%" onclick="ftStartHyrox()" ${running?'disabled':''}>${running?'Antrenman başladı':'Antrenmanı başlat'}</button></div>
  <div style="margin-top:14px">${HYROX_SEGMENTS.map(([key,name,target,unit,recommendation],i)=>`<div class="workout-card"><div class="exercise-head"><div><strong>${i+1}. ${name}</strong><div class="muted">Hedef: ${target}</div>${recommendation?`<div class="muted" style="margin-top:3px"><b>Tavsiye ağırlık:</b> ${recommendation}</div>`:''}</div><span class="pill">${name==='Koşu'?'Compromised run':'İstasyon'}</span></div><div class="row"><div><label>Süre (sn)</label><input type="number" inputmode="numeric" min="0" value="${draft[key]?.seconds||''}" placeholder="örn. 180" onchange="ftHyroxField('${key}','seconds',this.value)"></div>${unit?`<div><label>${hyroxWeightLabel(key)}</label><input type="number" inputmode="decimal" step="0.5" min="0" value="${draft[key]?.weight||''}" placeholder="${HYROX_WEIGHT_PLACEHOLDER[key]||'kg'}" onchange="ftHyroxField('${key}','weight',this.value)"></div>`:''}</div></div>`).join('')}</div>
  <div class="card"><div class="note"><b>İlk 2 hafta:</b> amaç yarış simülasyonu değil. Tüm bloğu kontrollü biçimde tamamla; koşuya döndüğünde nabzı toparlayabiliyor ol. 2 hafta sonunda tamamlanabilirlik ve sürelerine göre koşu mesafesini artıracağız.</div><button class="primary" style="width:100%;margin-top:12px" onclick="ftSaveHyrox()">Antrenmanı bitir ve kaydet</button></div>`;
+ wireProgramSelector('HYROX Hybrid',planned);
  if(running)hyroxTick();
 }
 
-// IMPORTANT — load-order dependency: this file must load AFTER workout-plus.js
-// and BEFORE ft-render-hooks.js (see index.html script order).
-// This wrapper makes a full render-routing decision (HYROX Hybrid vs a normal
-// plan) and can skip the underlying render entirely (renderHyrox() instead of
-// baseRenderWorkout()). The before/after hook registry in ft-render-hooks.js
-// only wraps around a fixed base render — it cannot skip it — so this routing
-// logic cannot itself be expressed as a registerBeforeWorkoutRender /
-// registerAfterWorkoutRender hook. Instead it wraps the workout-plus.js base
-// directly and loads BEFORE ft-render-hooks.js, so it becomes part of the one
-// base function that the hook registry then wraps exactly once. Every other
-// workout-screen file (coach-plus.js, ft-strong-keypad.js, etc.) registers
-// through the hook system and therefore still fires correctly for every
-// workout type, HYROX included, because their hooks run around this whole
-// routing function rather than being bypassed by it.
 const baseRenderWorkout=renderWorkout;
 renderWorkout=function(){
  const planned=todayWorkout();
@@ -112,21 +112,14 @@ renderWorkout=function(){
  if(chosen==='HYROX Hybrid')return renderHyrox();
  baseRenderWorkout();
  const date=document.getElementById('workoutDate');if(date)date.value=localDate();
- const sel=[...document.querySelectorAll('select')].find(s=>[...s.options].some(o=>FT_PROGRAM[o.value]||FT_PROGRAM[o.text]));
+ const sel=document.getElementById('ftProgramSelect');
  if(sel){
    sel.disabled=false;sel.style.display='';
-   const options=[...sel.options];
-   const match=options.find(o=>o.value===chosen||o.text===chosen);if(match)sel.value=match.value;
-   const box=sel.closest('div');if(box){
-     const lab=box.querySelector('label');if(lab)lab.textContent=planned?'Bugünün programı':'Programı seç';
-     box.querySelector('.ft-schedule-badge')?.remove();
-     const badge=document.createElement('div');badge.className='note ft-schedule-badge';badge.style.marginTop='4px';
-     const n=nextWorkout();
-     badge.innerHTML=planned?`<b>${DAY_NAMES[new Date().getDay()]}:</b> ${planned}<br><span class="muted">Planlı program otomatik açıldı; istersen başka programı da seçebilirsin.</span>`:`<b>Bugün planlı antrenman yok.</b><br><span class="muted">Programlar yine açık. İstediğin antrenmanı seçip başlayabilirsin.${n?` Sıradaki planlı gün: ${n.day} • ${n.plan}.`:''}</span>`;
-     box.appendChild(badge);
-   }
-   sel.onchange=()=>{const opt=sel.options[sel.selectedIndex];window._wk=FT_PROGRAM[sel.value]?sel.value:opt.text;renderWorkout()};
+   const match=[...sel.options].find(o=>o.value===chosen);if(match)sel.value=match.value;
+   const box=sel.closest('div');
+   const lab=box?.querySelector('label');if(lab)lab.textContent=planned?'Bugünün programı':'Programı seç';
  }
+ wireProgramSelector(chosen,planned);
 };
 
 const baseRenderPanel=renderPanel;
