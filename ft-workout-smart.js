@@ -26,7 +26,18 @@ function loadCard(){const x=weekly(),c=Object.entries(x.cats).sort((a,b)=>b[1]-a
 function hyrox(){const h=(db.workouts||[]).filter(w=>w.type==='HYROX Hybrid'&&w.hyrox?.segments).sort((a,b)=>a.date.localeCompare(b.date)),l=h.at(-1),f=h[0];if(!l)return `<div class="ftiq"><h3>HYROX performansı</h3><div class="ftiq-mini">İlk kayıtla birlikte gelişim paneli oluşacak.</div></div>`;const runs=l.hyrox.segments.filter(s=>s.name==='Koşu'&&s.seconds),avg=runs.length?runs.reduce((a,b)=>a+b.seconds,0)/runs.length:0,pk=avg?`${Math.floor(avg/.8/60)}:${String(Math.round(avg/.8%60)).padStart(2,'0')}/km`:'—',d=h.length>1?l.durationSec-f.durationSec:0;return `<div class="ftiq"><div class="ftiq-head"><div><h3>HYROX performansı</h3><div class="ftiq-mini">Son: ${l.date}</div></div><span class="ftiq-chip">${h.length} kayıt</span></div><div class="ftiq-grid" style="margin-top:10px"><div class="ftiq-stat"><span class="ftiq-mini">Toplam</span><b>${Math.round((l.durationSec||0)/60)} dk</b></div><div class="ftiq-stat"><span class="ftiq-mini">Ort. koşu</span><b>${pk}</b></div><div class="ftiq-stat"><span class="ftiq-mini">İlk kayda göre</span><b class="${d<0?'ftiq-good':d>0?'ftiq-warn':''}">${h.length>1?`${d>0?'+':''}${Math.round(d/60)} dk`:'—'}</b></div><div class="ftiq-stat"><span class="ftiq-mini">RPE</span><b>${l.rpe||'—'}</b></div></div></div>`}
 function planAt(k){return window.FT_SCHEDULE?.[date(k).getDay()]||null} function done(k,p){return (db.workouts||[]).some(w=>w.date===k&&w.type===p)}
 function missed(){const t=key(),s=week(),dec=get(MISS,{}),a=[];for(let k=s;k<t;k=add(k,1)){const p=planAt(k);if(p&&!done(k,p)&&dec[k]!=='skip'&&dec[k]!=='caught-up')a.push({date:k,plan:p})}return a}
-function applyCatch(){const c=get(CATCH,null);if(c?.date===key()&&window.FT_SCHEDULE){window.FT_SCHEDULE[new Date().getDay()]=c.plan;window._wk=c.plan}}applyCatch();
+let catchAppliedForKey=null;
+function applyCatch(){
+ if(window.__ftUserPickedProgram)return;
+ const c=get(CATCH,null);
+ if(!c||c.date!==key()||!window.FT_SCHEDULE)return;
+ const flagId=c.date+'|'+c.plan;
+ if(catchAppliedForKey===flagId)return;
+ catchAppliedForKey=flagId;
+ window.FT_SCHEDULE[new Date().getDay()]=c.plan;
+ window._wk=c.plan;
+}
+applyCatch();
 window.ftIQCatch=(d,p)=>{set(CATCH,{date:key(),sourceDate:d,plan:p});if(window.FT_SCHEDULE)window.FT_SCHEDULE[new Date().getDay()]=p;window._wk=p;renderWorkout()};window.ftIQSkip=d=>{const x=get(MISS,{});x[d]='skip';set(MISS,x);render()};
 function missedCard(){const x=missed().at(-1);return x?`<div class="ftiq" id="ftIQMiss"><span class="ftiq-chip">KAÇIRILAN ANTRENMAN</span><h3 style="margin-top:7px">${x.date} • ${esc(x.plan)}</h3><div class="ftiq-mini">Programı otomatik kaydırmıyorum.</div><div class="ftiq-actions" style="margin-top:10px"><button class="primary" onclick="ftIQCatch('${x.date}','${x.plan.replace(/'/g,"\\'")}')">Bugün telafi et</button><button class="secondary" onclick="ftIQSkip('${x.date}')">Aynen devam</button></div></div>`:''}
 function panel(){if(document.getElementById('ftIQPanel'))return;const h=document.createElement('div');h.id='ftIQPanel';h.innerHTML=missedCard()+loadCard()+hyrox();app.appendChild(h)}
