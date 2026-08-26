@@ -1,34 +1,36 @@
 /* FORM schedule v3 — scheduled days auto-select, programs remain accessible every day */
 (()=>{
-const FT_SCHEDULE={0:'Upper Strength',2:'Lower Strength',4:'Upper Hypertrophy',5:'HYROX Hybrid'};
+const FT_SCHEDULE={0:'Upper A — Göğüs',2:'Lower Strength',4:'Upper B — Sırt',5:'HYROX Hybrid'};
 const FT_PROGRAM={
- 'Upper Strength':[
+ 'Upper A — Göğüs':[
   {name:'Incline Chest Press',sets:3,reps:'6-8',rir:'1-2'},
-  {name:'Lat Pulldown',sets:3,reps:'6-8',rir:'1-2'},
-  {name:'Machine Chest Press',sets:3,reps:'8-10',rir:'1-2'},
-  {name:'Seated Cable Row',sets:3,reps:'8-10',rir:'1-2'},
-  {name:'Machine Shoulder Press',sets:3,reps:'8-10',rir:'1-2'},
-  {name:'Lateral Raise',sets:3,reps:'12-15',rir:'1'},
-  {name:'Cable / Biceps Curl',sets:2,reps:'10-12',rir:'1'},
-  {name:'Triceps Pushdown',sets:2,reps:'10-12',rir:'1'}
+  {name:'Machine Chest Press',sets:2,reps:'8-10',rir:'1'},
+  {name:'Cable Fly / Pec Deck',sets:2,reps:'10-15',rir:'0-1'},
+  {name:'Lat Pulldown',sets:2,reps:'8-10',rir:'1-2'},
+  {name:'Seated Cable Row',sets:2,reps:'8-10',rir:'1-2'},
+  {name:'Lateral Raise',sets:3,reps:'12-20',rir:'0-1'},
+  {name:'Triceps Pushdown',sets:2,reps:'10-15',rir:'0-1'},
+  {name:'Cable / Biceps Curl',sets:2,reps:'10-15',rir:'0-1'}
  ],
  'Lower Strength':[
-  {name:'Back Squat',sets:3,reps:'6-8',rir:'2'},
-  {name:'Romanian Deadlift',sets:3,reps:'8-10',rir:'2'},
-  {name:'Leg Press',sets:3,reps:'10',rir:'1-2'},
-  {name:'Leg Curl',sets:3,reps:'10-12',rir:'1-2'},
-  {name:'Calf Raise',sets:3,reps:'12-15',rir:'1'},
-  {name:'Cable Crunch',sets:3,reps:'10-15',rir:'1-2'}
+  {name:'Back Squat',sets:3,reps:'5-8',rir:'1-2'},
+  {name:'Romanian Deadlift',sets:3,reps:'6-10',rir:'1-2'},
+  {name:'Leg Press',sets:2,reps:'8-12',rir:'1'},
+  {name:'Leg Curl',sets:3,reps:'10-15',rir:'0-1'},
+  {name:'Leg Extension',sets:2,reps:'10-15',rir:'0-1'},
+  {name:'Calf Raise',sets:3,reps:'10-15',rir:'0-1'},
+  {name:'Cable Crunch',sets:2,reps:'10-15',rir:'1'}
  ],
- 'Upper Hypertrophy':[
-  {name:'Incline Dumbbell Press',sets:3,reps:'8-12',rir:'1-2'},
-  {name:'Neutral / Close Grip Lat Pulldown',sets:3,reps:'8-12',rir:'1-2'},
-  {name:'Cable Fly — Low to High',sets:3,reps:'12-15',rir:'1-2'},
-  {name:'Chest Supported Row',sets:3,reps:'10-12',rir:'1-2'},
-  {name:'Lateral Raise',sets:4,reps:'12-20',rir:'0-1'},
-  {name:'Reverse Pec Deck',sets:3,reps:'12-15',rir:'1'},
-  {name:'Hammer Curl',sets:3,reps:'10-15',rir:'1'},
-  {name:'Overhead Cable Triceps Extension',sets:3,reps:'10-15',rir:'1'}
+ 'Upper B — Sırt':[
+  {name:'Chest Supported T-Bar Row',sets:3,reps:'6-10',rir:'1-2'},
+  {name:'Neutral / Close Grip Lat Pulldown',sets:3,reps:'8-12',rir:'1'},
+  {name:'Seated Cable Row / High Row',sets:2,reps:'10-12',rir:'0-1'},
+  {name:'Reverse Pec Deck',sets:2,reps:'12-20',rir:'0-1'},
+  {name:'Incline Dumbbell Press',sets:2,reps:'8-10',rir:'1-2'},
+  {name:'Cable Fly — Low to High',sets:2,reps:'12-15',rir:'0-1'},
+  {name:'Lateral Raise',sets:3,reps:'12-20',rir:'0-1'},
+  {name:'Hammer Curl',sets:2,reps:'8-12',rir:'0-1'},
+  {name:'Overhead Cable Triceps Extension',sets:2,reps:'10-15',rir:'0-1'}
  ],
  'HYROX Hybrid':[{name:'HYROX Hybrid Circuit',sets:0,reps:'',rir:''}]
 };
@@ -40,7 +42,7 @@ function applySchedule(){
  db.program=FT_PROGRAM;
  db.settings=db.settings||{};
  db.settings.trainingDays={...FT_SCHEDULE};
- db.settings.scheduleVersion='3.0';
+ db.settings.scheduleVersion='3.1-preview-bodybuilding';
  if(typeof save==='function')save();
 }
 applySchedule();
@@ -79,9 +81,8 @@ function renderHyrox(){
 const baseRenderWorkout=renderWorkout;
 renderWorkout=function(){
  const planned=todayWorkout();
- const requested=window._wk;
- const chosen=(requested&&FT_PROGRAM[requested])?requested:(planned||Object.keys(FT_PROGRAM)[0]);
- window._wk=chosen;
+ if(!window._wk)window._wk=planned||Object.keys(FT_PROGRAM)[0];
+ const chosen=window._wk;
  if(chosen==='HYROX Hybrid')return renderHyrox();
  baseRenderWorkout();
  const date=document.getElementById('workoutDate');if(date)date.value=localDate();
@@ -103,19 +104,7 @@ renderWorkout=function(){
 };
 
 const baseRenderPanel=renderPanel;
-renderPanel=function(){
- baseRenderPanel();
- const planned=todayWorkout();
- setTimeout(()=>{
-  const buttons=[...document.querySelectorAll('button')].filter(b=>b.textContent.trim().includes('Antrenmana başla')||b.textContent.includes('antrenmanını aç')||b.textContent.includes('dinlenme günü'));
-  buttons.forEach(b=>{
-    b.disabled=false;
-    b.textContent=planned?`${planned} antrenmanını aç`:'Programları aç';
-  });
- },0);
-};
+renderPanel=function(){baseRenderPanel();const plan=todayWorkout();document.querySelectorAll('.hero-tag').forEach(e=>e.textContent=plan?`${DAY_NAMES[new Date().getDay()]} • ${plan}`:'Bugün planlı antrenman yok');};
 
-window.FT_SCHEDULE=FT_SCHEDULE;
-window.ftTodayWorkout=todayWorkout;
-if(typeof render==='function')render();
+window.FT_SCHEDULE=FT_SCHEDULE;window.FT_PROGRAM=FT_PROGRAM;window.FT_TODAY_WORKOUT=todayWorkout;window.FT_NEXT_WORKOUT=nextWorkout;
 })();
