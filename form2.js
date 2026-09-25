@@ -20,7 +20,7 @@ function hist(name){return(dbx()?.workouts||[]).filter(w=>(w.exercises||[]).some
 function rec(e){
  const w=hist(e.name).at(-1),ss=sets(w?.exercises?.find(x=>x.name===e.name)),r=rg(e.reps);if(!ss.length)return['REFERANS',r[0]+'-'+r[1]+' tekrar • RIR '+e.rir+' ile temiz başlangıç'];
  const kg=Math.max(...ss.map(x=>+x.weight||0)),rp=ss.map(x=>+x.reps||0),rr=ss.map(x=>+x.rir).filter(Number.isFinite),top=rp.every(x=>x>=r[1]),avg=rr.length?rr.reduce((a,b)=>a+b,0)/rr.length:null;
- if(top&&(avg==null||avg>=1)&&kg){const n=/squat|deadlift|leg press|row/i.test(e.name)?kg+5:/lateral|curl|triceps|fly|raise/i.test(e.name)?kg+(kg<15?1:2):kg+2.5;return['YÜK ARTIR',n+' kg dene • tüm setler üst tekrar sınırına ulaştı']}
+ if(top&&(avg==null||avg>=1)&&kg){const n=/squat|deadlift|leg press/i.test(e.name)?kg+5:/lateral|curl|triceps|fly|raise/i.test(e.name)?kg+(kg<15?1:2):kg+2.5;return['YÜK ARTIR',n+' kg dene • tüm setler üst tekrar sınırına ulaştı']}
  if(rp.some(x=>x<Math.max(1,r[0]-2))&&kg)return['TOPARLA',(Math.round(kg*.95*2)/2)+' kg civarı • hedef bandını geri kazan'];
  return['REP +',(kg||'Aynı')+' kg ile toplam tekrarı artır • sonra kilo'];
 }
