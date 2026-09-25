@@ -1,38 +1,45 @@
 /* FORM schedule v3 — scheduled days auto-select, programs remain accessible every day */
 (()=>{
-const FT_SCHEDULE={0:'Upper A — Göğüs',2:'Lower Strength',4:'Upper B — Sırt',5:'HYROX Hybrid'};
+const FT_SCHEDULE={0:'Göğüs + Triceps',2:'Full Pull',4:'Omuz + Üst Göğüs',5:'Bacak + Karın'};
 const FT_PROGRAM={
- 'Upper A — Göğüs':[
-  {name:'Incline Chest Press',sets:3,reps:'6-8',rir:'1-2'},
-  {name:'Machine Chest Press',sets:2,reps:'8-10',rir:'1'},
-  {name:'Cable Fly / Pec Deck',sets:2,reps:'10-15',rir:'0-1'},
-  {name:'Lat Pulldown',sets:2,reps:'8-10',rir:'1-2'},
-  {name:'Seated Cable Row',sets:2,reps:'8-10',rir:'1-2'},
-  {name:'Lateral Raise',sets:3,reps:'12-20',rir:'0-1'},
-  {name:'Triceps Pushdown',sets:2,reps:'10-15',rir:'0-1'},
-  {name:'Cable / Biceps Curl',sets:2,reps:'10-15',rir:'0-1'}
+ 'Göğüs + Triceps':[
+  {name:'Barbell Bench Press',sets:3,reps:'5-8',rir:'1-2'},
+  {name:'Incline Dumbbell Press',sets:3,reps:'8-10',rir:'1-2'},
+  {name:'Machine Chest Press',sets:3,reps:'8-12',rir:'1'},
+  {name:'Pec Deck Fly',sets:3,reps:'12-15',rir:'1'},
+  {name:'Cable Lateral Raise',sets:3,reps:'12-20',rir:'1'},
+  {name:'Rope Triceps Pushdown',sets:3,reps:'10-15',rir:'1'},
+  {name:'Overhead Rope Triceps Extension',sets:2,reps:'10-15',rir:'1'}
  ],
- 'Lower Strength':[
-  {name:'Back Squat',sets:3,reps:'5-8',rir:'1-2'},
+ 'Full Pull':[
+  {name:'Pull-Up',sets:3,reps:'6-10',rir:'1-2'},
+  {name:'Neutral-Grip Lat Pulldown',sets:3,reps:'8-12',rir:'1'},
+  {name:'Chest-Supported T-Bar Row',sets:3,reps:'8-12',rir:'1-2'},
+  {name:'Single-Arm Machine Row',sets:3,reps:'10-12',rir:'1'},
+  {name:'Straight-Arm Pulldown',sets:2,reps:'12-15',rir:'1'},
+  {name:'Reverse Pec Deck',sets:3,reps:'12-20',rir:'1'},
+  {name:'Incline Dumbbell Curl',sets:3,reps:'8-12',rir:'1'},
+  {name:'Hammer Curl',sets:2,reps:'10-15',rir:'1'}
+ ],
+ 'Omuz + Üst Göğüs':[
+  {name:'Machine Shoulder Press',sets:3,reps:'6-10',rir:'1-2'},
+  {name:'Cable Lateral Raise',sets:4,reps:'12-20',rir:'1'},
+  {name:'Reverse Pec Deck',sets:3,reps:'12-20',rir:'1'},
+  {name:'Plate-Loaded Incline Press',sets:3,reps:'8-12',rir:'1'},
+  {name:'Cable Fly — Low to High',sets:2,reps:'12-15',rir:'1'},
+  {name:'Straight-Arm Pulldown',sets:2,reps:'12-15',rir:'1'},
+  {name:'Cable Triceps Pushdown',sets:2,reps:'10-15',rir:'1'}
+ ],
+ 'Bacak + Karın':[
+  {name:'Back Squat',sets:3,reps:'6-10',rir:'1-2'},
   {name:'Romanian Deadlift',sets:3,reps:'6-10',rir:'1-2'},
-  {name:'Leg Press',sets:2,reps:'8-12',rir:'1'},
-  {name:'Leg Curl',sets:3,reps:'10-15',rir:'0-1'},
-  {name:'Leg Extension',sets:2,reps:'10-15',rir:'0-1'},
-  {name:'Calf Raise',sets:3,reps:'10-15',rir:'0-1'},
-  {name:'Cable Crunch',sets:2,reps:'10-15',rir:'1'}
- ],
- 'Upper B — Sırt':[
-  {name:'Chest Supported T-Bar Row',sets:3,reps:'6-10',rir:'1-2'},
-  {name:'Neutral / Close Grip Lat Pulldown',sets:3,reps:'8-12',rir:'1'},
-  {name:'Seated Cable Row / High Row',sets:2,reps:'10-12',rir:'0-1'},
-  {name:'Reverse Pec Deck',sets:2,reps:'12-20',rir:'0-1'},
-  {name:'Incline Dumbbell Press',sets:2,reps:'8-10',rir:'1-2'},
-  {name:'Cable Fly — Low to High',sets:2,reps:'12-15',rir:'0-1'},
-  {name:'Lateral Raise',sets:3,reps:'12-20',rir:'0-1'},
-  {name:'Hammer Curl',sets:2,reps:'8-12',rir:'0-1'},
-  {name:'Overhead Cable Triceps Extension',sets:2,reps:'10-15',rir:'0-1'}
- ],
- 'HYROX Hybrid':[{name:'HYROX Hybrid Circuit',sets:0,reps:'',rir:''}]
+  {name:'Leg Press',sets:3,reps:'10-15',rir:'1'},
+  {name:'Seated Leg Curl',sets:3,reps:'10-15',rir:'1'},
+  {name:'Leg Extension',sets:2,reps:'12-15',rir:'1'},
+  {name:'Standing Calf Raise',sets:4,reps:'10-15',rir:'1'},
+  {name:'Cable Crunch',sets:3,reps:'10-15',rir:'1-2'},
+  {name:'Hanging Knee / Leg Raise',sets:3,reps:'8-15',rir:'1-2'}
+ ]
 };
 const DAY_NAMES=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
 function localDate(){const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`}
@@ -42,7 +49,7 @@ function applySchedule(){
  db.program=FT_PROGRAM;
  db.settings=db.settings||{};
  db.settings.trainingDays={...FT_SCHEDULE};
- db.settings.scheduleVersion='3.1-preview-bodybuilding';
+ db.settings.scheduleVersion='4.0-form2';
  if(typeof save==='function')save();
 }
 applySchedule();
