@@ -9,7 +9,7 @@ function save2(){try{save()}catch{}}
 function boot(){
  const d=dbx();if(!d)return;d.settings=d.settings||{};
  if(!localStorage.getItem('formDB_backup_pre_form2'))try{localStorage.setItem('formDB_backup_pre_form2',JSON.stringify(d))}catch{}
- if(d.settings.form2Version!==VER){d.settings.programArchive=d.settings.programArchive||{};d.settings.programArchive.preForm2={savedAt:new Date().toISOString(),program:d.program,trainingDays:d.settings.trainingDays};d.settings.form2BlockStart=(new Date()).toISOString().slice(0,10)}
+ if(d.settings.form2Version!==VER){d.settings.programArchive=d.settings.programArchive||{};d.settings.programArchive.preForm2=d.settings.programArchive.preForm2||{savedAt:new Date().toISOString(),program:JSON.parse(JSON.stringify(d.program||{})),trainingDays:JSON.parse(JSON.stringify(d.settings.trainingDays||{}))};d.settings.form2BlockStart=d.settings.form2BlockStart||(new Date()).toISOString().slice(0,10)}
  d.settings.archivedPrograms=d.settings.archivedPrograms||{};d.settings.archivedPrograms['HYROX Hybrid']={archivedAt:d.settings.archivedPrograms['HYROX Hybrid']?.archivedAt||new Date().toISOString(),note:'Aktif programdan çıkarıldı; geçmiş kayıtlar korunur.'};
  d.settings.form2Version=VER;d.settings.trainingDays={...S};d.settings.scheduleVersion='4.0-form2';delete d.program?.['HYROX Hybrid'];save2();
  window.FT_SCHEDULE=d.settings.trainingDays;if(!window._wk||!d.program?.[window._wk])window._wk=S[new Date().getDay()]||Object.keys(d.program||{})[0];
