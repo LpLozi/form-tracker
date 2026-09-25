@@ -37,6 +37,8 @@ const PRECACHE=[
   '/ft-workout-smart.js',
   '/ft-life-smart.js',
   '/ft-smart-hotfix.js',
+  '/ft-calendar.js',
+  '/form2.js',
   '/assets/form-logo.svg',
   '/icon-192.png',
   '/icon-512.png'
