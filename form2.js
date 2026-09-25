@@ -10,7 +10,7 @@ function boot(){
  const d=dbx();if(!d)return;d.settings=d.settings||{};
  if(!localStorage.getItem('formDB_backup_pre_form2'))try{localStorage.setItem('formDB_backup_pre_form2',JSON.stringify(d))}catch{}
  if(d.settings.form2Version!==VER){d.settings.programArchive=d.settings.programArchive||{};d.settings.programArchive.preForm2=d.settings.programArchive.preForm2||{savedAt:new Date().toISOString(),program:JSON.parse(JSON.stringify(d.program||{})),trainingDays:JSON.parse(JSON.stringify(d.settings.trainingDays||{}))};d.settings.form2BlockStart=d.settings.form2BlockStart||(new Date()).toISOString().slice(0,10)}
- d.settings.archivedPrograms=d.settings.archivedPrograms||{};d.settings.archivedPrograms['HYROX Hybrid']={archivedAt:d.settings.archivedPrograms['HYROX Hybrid']?.archivedAt||new Date().toISOString(),note:'Aktif programdan çıkarıldı; geçmiş kayıtlar korunur.'};
+ d.settings.form2Targets=d.settings.form2Targets||{steps:9000,cardioSessions:3,cardioMinutes:30,protein:190};d.settings.archivedPrograms=d.settings.archivedPrograms||{};d.settings.archivedPrograms['HYROX Hybrid']={archivedAt:d.settings.archivedPrograms['HYROX Hybrid']?.archivedAt||new Date().toISOString(),note:'Aktif programdan çıkarıldı; geçmiş kayıtlar korunur.'};
  d.settings.form2Version=VER;d.settings.trainingDays={...S};d.settings.scheduleVersion='4.0-form2';delete d.program?.['HYROX Hybrid'];save2();
  window.FT_SCHEDULE=d.settings.trainingDays;if(!window._wk||!d.program?.[window._wk])window._wk=S[new Date().getDay()]||Object.keys(d.program||{})[0];
 }
@@ -26,9 +26,11 @@ function rec(e){
 }
 function weekDone(){const a=new Date();a.setDate(a.getDate()-((a.getDay()+6)%7));const b=new Date(a);b.setDate(b.getDate()+6),k=x=>x.toISOString().slice(0,10),t=new Set((dbx()?.workouts||[]).filter(w=>w.date>=k(a)&&w.date<=k(b)).map(w=>w.type));return Object.values(S).filter(x=>t.has(x)).length}
 function block(){const x=dbx()?.settings?.form2BlockStart;if(!x)return 1;return Math.min(8,Math.max(1,Math.floor((Date.now()-new Date(x+'T12:00:00'))/604800000)+1))}
+function cardioWeek(){const a=new Date();a.setDate(a.getDate()-((a.getDay()+6)%7));a.setHours(0,0,0,0);const b=new Date(a);b.setDate(b.getDate()+7);const k=x=>x.toISOString().slice(0,10);return(dbx()?.workouts||[]).filter(w=>w.date>=k(a)&&w.date<k(b)&&w.cardio&&Number(w.cardio.minutes)>0).length}
+function lifeLine(){const d=dbx(),t=d?.settings?.form2Targets||{steps:9000,cardioSessions:3},steps=Number(d?.habits?.[typeof today==='string'?today:new Date().toISOString().slice(0,10)]?.steps||0);return'Adım '+steps.toLocaleString('tr-TR')+' / '+Number(t.steps||9000).toLocaleString('tr-TR')+' • Kardiyo '+cardioWeek()+' / '+Number(t.cardioSessions||3)}
 function panel(){
  if(document.getElementById('f2today'))return;const p=S[new Date().getDay()]||'',h=document.createElement('section');h.id='f2today';h.className='f2today';
- h.innerHTML='<div><small>BUGÜN • '+D[new Date().getDay()]+'</small><h2>'+(p?E(p):'Toparlanma günü')+'</h2><p>'+(p?E(F[p]):'8–10 bin adım • 25–35 dk düşük/orta tempo kardiyo isteğe bağlı')+'</p><span>Blok '+block()+'/8 • Bu hafta '+weekDone()+'/4</span></div>'+(p?'<button class="primary" onclick="window._wk='+JSON.stringify(p)+';go(\\'Antrenman\\')">Antrenmana başla</button>':'');
+ h.innerHTML='<div><small>BUGÜN • '+D[new Date().getDay()]+'</small><h2>'+(p?E(p):'Toparlanma günü')+'</h2><p>'+(p?E(F[p]):'Toparlanma • düşük/orta tempo kardiyo için uygun gün')+'</p><span>Blok '+block()+'/8 • Bu hafta '+weekDone()+'/4<br>'+lifeLine()+'</span></div>'+(p?'<button class="primary" onclick="window._wk='+JSON.stringify(p)+';go(\\'Antrenman\\')">Antrenmana başla</button>':'');
  const hero=document.querySelector('.hero-brand');(hero||document.querySelector('#app>*'))?.insertAdjacentElement('afterend',h);
  const c=document.getElementById('coachToday');if(c){const q=c.querySelector('.coach-today-head h2');if(q)q.textContent='Bel küçülürken performansı koru'}
 }
