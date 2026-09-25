@@ -23,8 +23,8 @@ const FT_PROGRAM={
  ],
  'Omuz + Üst Göğüs':[
   {name:'Machine Shoulder Press',sets:3,reps:'6-10',rir:'1-2'},
-  {name:'Cable Lateral Raise',sets:4,reps:'12-20',rir:'1'},
-  {name:'Reverse Pec Deck',sets:3,reps:'12-20',rir:'1'},
+  {name:'Cable Lateral Raise',sets:3,reps:'12-20',rir:'1'},
+  {name:'Reverse Pec Deck',sets:2,reps:'12-20',rir:'1'},
   {name:'Plate-Loaded Incline Press',sets:3,reps:'8-12',rir:'1'},
   {name:'Cable Fly — Low to High',sets:2,reps:'12-15',rir:'1'},
   {name:'Straight-Arm Pulldown',sets:2,reps:'12-15',rir:'1'},
@@ -36,9 +36,9 @@ const FT_PROGRAM={
   {name:'Leg Press',sets:3,reps:'10-15',rir:'1'},
   {name:'Seated Leg Curl',sets:3,reps:'10-15',rir:'1'},
   {name:'Leg Extension',sets:2,reps:'12-15',rir:'1'},
-  {name:'Standing Calf Raise',sets:4,reps:'10-15',rir:'1'},
-  {name:'Cable Crunch',sets:3,reps:'10-15',rir:'1-2'},
-  {name:'Hanging Knee / Leg Raise',sets:3,reps:'8-15',rir:'1-2'}
+  {name:'Standing Calf Raise',sets:3,reps:'10-15',rir:'1'},
+  {name:'Cable Crunch',sets:2,reps:'10-15',rir:'1-2'},
+  {name:'Hanging Knee / Leg Raise',sets:2,reps:'8-15',rir:'1-2'}
  ]
 };
 const DAY_NAMES=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
