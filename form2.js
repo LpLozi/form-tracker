@@ -1,0 +1,50 @@
+/* FORM 2.0 — compact goal layer */
+(()=>{'use strict';
+const VER='2.0.0',S={0:'Göğüs + Triceps',2:'Full Pull',4:'Omuz + Üst Göğüs',5:'Bacak + Karın'};
+const F={'Göğüs + Triceps':'Göğüs önceliği • göğüs doluluğu • triceps','Full Pull':'Lat genişliği • orta sırt • arka omuz • biceps','Omuz + Üst Göğüs':'Yan omuz • üst göğüs • V-taper','Bacak + Karın':'Bacak gücü • posterior chain • core'};
+const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const D=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+function dbx(){try{return db}catch{return window.db}}
+function save2(){try{save()}catch{}}
+function boot(){
+ const d=dbx();if(!d)return;d.settings=d.settings||{};
+ if(!localStorage.getItem('formDB_backup_pre_form2'))try{localStorage.setItem('formDB_backup_pre_form2',JSON.stringify(d))}catch{}
+ if(d.settings.form2Version!==VER){d.settings.programArchive=d.settings.programArchive||{};d.settings.programArchive.preForm2={savedAt:new Date().toISOString(),program:d.program,trainingDays:d.settings.trainingDays};d.settings.form2BlockStart=(new Date()).toISOString().slice(0,10)}
+ d.settings.archivedPrograms=d.settings.archivedPrograms||{};d.settings.archivedPrograms['HYROX Hybrid']={archivedAt:d.settings.archivedPrograms['HYROX Hybrid']?.archivedAt||new Date().toISOString(),note:'Aktif programdan çıkarıldı; geçmiş kayıtlar korunur.'};
+ d.settings.form2Version=VER;d.settings.trainingDays={...S};d.settings.scheduleVersion='4.0-form2';delete d.program?.['HYROX Hybrid'];save2();
+ window.FT_SCHEDULE=d.settings.trainingDays;if(!window._wk||!d.program?.[window._wk])window._wk=S[new Date().getDay()]||Object.keys(d.program||{})[0];
+}
+function sets(e){return(e?.setData||[]).filter(x=>x&&(x.done||+x.weight||+x.reps))}
+function rg(x){const m=String(x||'').match(/(\d+)\D+(\d+)/);return m?[+m[1],+m[2]]:[6,12]}
+function hist(name){return(dbx()?.workouts||[]).filter(w=>(w.exercises||[]).some(e=>e.name===name)).sort((a,b)=>String(a.date).localeCompare(String(b.date)))}
+function rec(e){
+ const w=hist(e.name).at(-1),ss=sets(w?.exercises?.find(x=>x.name===e.name)),r=rg(e.reps);if(!ss.length)return['REFERANS',r[0]+'-'+r[1]+' tekrar • RIR '+e.rir+' ile temiz başlangıç'];
+ const kg=Math.max(...ss.map(x=>+x.weight||0)),rp=ss.map(x=>+x.reps||0),rr=ss.map(x=>+x.rir).filter(Number.isFinite),top=rp.every(x=>x>=r[1]),avg=rr.length?rr.reduce((a,b)=>a+b,0)/rr.length:null;
+ if(top&&(avg==null||avg>=1)&&kg){const n=/squat|deadlift|leg press|row/i.test(e.name)?kg+5:/lateral|curl|triceps|fly|raise/i.test(e.name)?kg+(kg<15?1:2):kg+2.5;return['YÜK ARTIR',n+' kg dene • tüm setler üst tekrar sınırına ulaştı']}
+ if(rp.some(x=>x<Math.max(1,r[0]-2))&&kg)return['TOPARLA',(Math.round(kg*.95*2)/2)+' kg civarı • hedef bandını geri kazan'];
+ return['REP +',(kg||'Aynı')+' kg ile toplam tekrarı artır • sonra kilo'];
+}
+function weekDone(){const a=new Date();a.setDate(a.getDate()-((a.getDay()+6)%7));const b=new Date(a);b.setDate(b.getDate()+6),k=x=>x.toISOString().slice(0,10),t=new Set((dbx()?.workouts||[]).filter(w=>w.date>=k(a)&&w.date<=k(b)).map(w=>w.type));return Object.values(S).filter(x=>t.has(x)).length}
+function block(){const x=dbx()?.settings?.form2BlockStart;if(!x)return 1;return Math.min(8,Math.max(1,Math.floor((Date.now()-new Date(x+'T12:00:00'))/604800000)+1))}
+function panel(){
+ if(document.getElementById('f2today'))return;const p=S[new Date().getDay()]||'',h=document.createElement('section');h.id='f2today';h.className='f2today';
+ h.innerHTML='<div><small>BUGÜN • '+D[new Date().getDay()]+'</small><h2>'+(p?E(p):'Toparlanma günü')+'</h2><p>'+(p?E(F[p]):'8–10 bin adım • 25–35 dk düşük/orta tempo kardiyo isteğe bağlı')+'</p><span>Blok '+block()+'/8 • Bu hafta '+weekDone()+'/4</span></div>'+(p?'<button class="primary" onclick="window._wk='+JSON.stringify(p)+';go(\\'Antrenman\\')">Antrenmana başla</button>':'');
+ const hero=document.querySelector('.hero-brand');(hero||document.querySelector('#app>*'))?.insertAdjacentElement('afterend',h);
+ const c=document.getElementById('coachToday');if(c){const q=c.querySelector('.coach-today-head h2');if(q)q.textContent='Bel küçülürken performansı koru'}
+}
+function workout(){
+ if(document.getElementById('f2work'))return;const d=dbx(),p=window._wk,rows=d?.program?.[p]||[],first=document.querySelector('.workout-card');if(!first||!rows.length)return;
+ const h=document.createElement('div');h.id='f2work';h.className='f2work';h.innerHTML='<div><small>'+E(p)+'</small><h2>'+E(F[p]||'Kaliteli setler • kontrollü progresyon')+'</h2><p>'+rows.length+' hareket • '+rows.reduce((a,x)=>a+(+x.sets||0),0)+' çalışma seti</p></div><b>Önce rep → sonra kilo</b>';first.insertAdjacentElement('beforebegin',h);
+ [...document.querySelectorAll('.workout-card')].slice(0,rows.length).forEach((c,i)=>{const x=rec(rows[i]),t=c.querySelector('.ftv3-target');if(t)t.innerHTML='<span>'+E(x[0])+'</span><b>'+E(x[1])+'</b>'});
+}
+function pr(name){let b=null;hist(name).forEach(w=>sets(w.exercises.find(e=>e.name===name)).forEach(s=>{const q=(+s.weight||0)*(1+(+s.reps||0)/30);if(!b||q>b.q)b={q,kg:+s.weight||0,r:+s.reps||0,date:w.date}}));return b}
+function progress(){
+ if(document.getElementById('f2progress'))return;const d=dbx(),keys=['Barbell Bench Press','Incline Dumbbell Press','Neutral-Grip Lat Pulldown','Chest-Supported T-Bar Row','Machine Shoulder Press','Back Squat','Romanian Deadlift'],prs=keys.map(n=>[n,pr(n)]).filter(x=>x[1]),photos=[...(d.photos||[])].slice(-6).reverse(),z=document.createElement('div');z.id='f2progress';
+ z.innerHTML='<section class="card"><h2>FORM 2.0 ilerleme</h2><p class="muted">Ana gösterge: bel aşağı inerken göğüs, lat ve omuz performansını korumak veya artırmak.</p><div class="f2prs">'+(prs.length?prs.map(x=>'<div><span>'+E(x[0])+'</span><b>'+x[1].kg+' kg × '+x[1].r+'</b><small>e1RM '+x[1].q.toFixed(1)+' kg • '+x[1].date+'</small></div>').join(''):'<span class="muted">PR kayıtları antrenmanlarla oluşacak.</span>')+'</div></section><section class="card"><h2>Ölçüm + fotoğraf</h2><div class="f2photo"><input id="f2date" type="date" value="'+new Date().toISOString().slice(0,10)+'"><select id="f2pose"><option>Ön rahat</option><option>Ön poz</option><option>Sağ yan</option><option>Sol yan</option><option>Arka</option><option>Tam boy</option></select><input id="f2file" type="file" accept="image/*"><button class="primary" onclick="form2Photo()">Fotoğraf ekle</button></div><div class="f2gallery">'+(photos.length?photos.map(p=>'<figure><img src="'+p.data+'"><figcaption>'+E(p.pose)+' • '+E(p.date)+'</figcaption></figure>').join(''):'<span class="muted">Henüz fotoğraf yok.</span>')+'</div></section>';document.getElementById('app')?.appendChild(z)
+}
+window.form2Photo=function(){const f=document.getElementById('f2file')?.files?.[0];if(!f)return toast('Fotoğraf seç.');const r=new FileReader();r.onload=()=>{const d=dbx();d.photos=d.photos||[];d.photos.push({date:document.getElementById('f2date').value,pose:document.getElementById('f2pose').value,data:r.result});save2();toast('Fotoğraf kaydedildi');renderMeasurements()};r.readAsDataURL(f)}
+function nav2(){const L={Panel:'Bugün',Ölçümler:'İlerleme'};mainNav.innerHTML=pages.map(p=>'<button class="'+(p===current?'active':'')+'" onclick="go(\\''+p+'\\')" aria-label="'+(L[p]||p)+'"><span class="nav-icon">'+(navIconSvg[p]||'')+'</span><span class="nav-label">'+(L[p]||p)+'</span></button>').join('')}
+function style(){const x=document.createElement('style');x.textContent='.f2today,.f2work{display:flex;justify-content:space-between;gap:14px;align-items:center;background:#fff;border:1px solid #dfe6ef;border-radius:16px;padding:14px;margin:10px 0;box-shadow:0 6px 20px rgba(31,50,81,.05)}.f2today small,.f2work small{font-size:10px;font-weight:800;color:#2563eb}.f2today h2,.f2work h2{margin:3px 0;font-size:18px}.f2today p,.f2work p{margin:0;color:#6b7280;font-size:11px}.f2today span{display:block;margin-top:7px;font-size:10px;color:#657286}.f2prs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.f2prs>div{padding:9px;background:#f7f9fc;border:1px solid #e5eaf1;border-radius:10px}.f2prs span,.f2prs small{display:block;font-size:9px;color:#6b7280}.f2prs b{display:block;font-size:13px;margin:3px 0}.f2photo{display:grid;grid-template-columns:140px 160px 1fr auto;gap:7px}.f2gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:7px;margin-top:10px}.f2gallery figure{margin:0;border:1px solid #e5eaf1;border-radius:10px;overflow:hidden}.f2gallery img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}.f2gallery figcaption{padding:6px;font-size:9px}@media(max-width:800px){.nav{grid-template-columns:repeat(6,1fr)!important}.f2today,.f2work{display:grid}.f2prs{grid-template-columns:1fr 1fr}.f2photo{grid-template-columns:1fr 1fr}.f2photo input[type=file],.f2photo button{grid-column:1/-1}.workout-card{margin-bottom:8px!important}.hero-brand{padding:14px!important;margin-bottom:8px!important}}';document.head.appendChild(x)}
+function install(){boot();style();const ix=pages.indexOf('Fotoğraflar');if(ix>=0)pages.splice(ix,1);nav=nav2;nav();const a=window.renderPanel;window.renderPanel=function(){const r=a.apply(this,arguments);setTimeout(panel,40);return r};const b=window.renderWorkout;window.renderWorkout=function(){boot();const r=b.apply(this,arguments);setTimeout(workout,800);setTimeout(workout,1100);return r};const c=window.renderMeasurements;window.renderMeasurements=function(){const r=c.apply(this,arguments);setTimeout(progress,50);return r};const g=window.go;window.go=function(p){if(p==='Fotoğraflar')p='Ölçümler';return g(p)};try{render()}catch{}}
+install();window.FORM2={version:VER,schedule:S,progression:rec};
+})();
