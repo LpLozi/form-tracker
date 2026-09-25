@@ -25,6 +25,7 @@ const PRECACHE=[
   '/ft-strong-keypad.css',
   '/ft-strong-keypad.js',
   '/ft-library-hotfix.js',
+  '/form2-preflight.js',
   '/coach-plus.css',
   '/coach-plus.js',
   '/coach-refine.js',
