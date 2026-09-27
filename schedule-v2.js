@@ -12,14 +12,11 @@ const FT_PROGRAM={
   {name:'Overhead Rope Triceps Extension',sets:2,reps:'10-15',rir:'1'}
  ],
  'Full Pull':[
-  {name:'Pull-Up',sets:3,reps:'6-10',rir:'1-2'},
-  {name:'Neutral-Grip Lat Pulldown',sets:3,reps:'8-12',rir:'1'},
-  {name:'Chest-Supported T-Bar Row',sets:3,reps:'8-12',rir:'1-2'},
-  {name:'Single-Arm Machine Row',sets:3,reps:'10-12',rir:'1'},
+  {name:'Pull-Up',sets:4,reps:'6-8',rir:'1-2'},
+  {name:'Seated Cable Row',sets:4,reps:'6-8',rir:'1-2'},
+  {name:'Chest-Supported T-Bar Row',sets:3,reps:'8-10',rir:'1-2'},
   {name:'Straight-Arm Pulldown',sets:2,reps:'12-15',rir:'1'},
-  {name:'Reverse Pec Deck',sets:3,reps:'12-20',rir:'1'},
-  {name:'Incline Dumbbell Curl',sets:3,reps:'8-12',rir:'1'},
-  {name:'Hammer Curl',sets:2,reps:'10-15',rir:'1'}
+  {name:'Reverse Pec Deck',sets:2,reps:'12-15',rir:'1'}
  ],
  'Omuz + Üst Göğüs':[
   {name:'Machine Shoulder Press',sets:3,reps:'6-10',rir:'1-2'},
@@ -32,7 +29,7 @@ const FT_PROGRAM={
  ],
  'Bacak + Karın':[
   {name:'Back Squat',sets:3,reps:'6-10',rir:'1-2'},
-  {name:'Romanian Deadlift',sets:3,reps:'6-10',rir:'1-2'},
+  {name:'Conventional Deadlift',sets:3,reps:'4-6',rir:'1-2'},
   {name:'Leg Press',sets:3,reps:'10-15',rir:'1'},
   {name:'Seated Leg Curl',sets:3,reps:'10-15',rir:'1'},
   {name:'Leg Extension',sets:2,reps:'12-15',rir:'1'},
@@ -49,7 +46,7 @@ function applySchedule(){
  db.program=FT_PROGRAM;
  db.settings=db.settings||{};
  db.settings.trainingDays={...FT_SCHEDULE};
- db.settings.scheduleVersion='4.0-form2';
+ db.settings.scheduleVersion='4.1-form2-pull';
  if(typeof save==='function')save();
 }
 applySchedule();
