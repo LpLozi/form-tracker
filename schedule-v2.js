@@ -3,8 +3,8 @@
 const FT_SCHEDULE={0:'Göğüs + Triceps',2:'Full Pull',4:'Omuz + Üst Göğüs',5:'Bacak + Karın'};
 const FT_PROGRAM={
  'Göğüs + Triceps':[
-  {name:'Barbell Bench Press',sets:3,reps:'5-8',rir:'1-2'},
-  {name:'Incline Dumbbell Press',sets:3,reps:'8-10',rir:'1-2'},
+  {name:'Dumbbell Bench Press',sets:3,reps:'5-8',rir:'1-2'},
+  {name:'Incline Barbell Bench Press',sets:3,reps:'8-10',rir:'1-2'},
   {name:'Machine Chest Press',sets:3,reps:'8-12',rir:'1'},
   {name:'Pec Deck Fly',sets:3,reps:'12-15',rir:'1'},
   {name:'Cable Lateral Raise',sets:3,reps:'12-20',rir:'1'},
