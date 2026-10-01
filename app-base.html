@@ -87,7 +87,7 @@ function migrateDB(){
   const existing=new Map((db.foods||[]).map(f=>[(f.name||'').toLocaleLowerCase('tr-TR'),f]));
   defaultFoods.forEach(f=>{if(!existing.has(f.name.toLocaleLowerCase('tr-TR'))) (db.foods=db.foods||[]).push(f)});
   db.foods=(db.foods||defaultFoods).map(f=>({...f,category:f.category||'Diğer'}));
-  db.program=defaultProgram; db.settings.trainingDays={1:'Upper A',2:'Lower A',4:'Upper B',6:'Lower B'}; db.version=APP_VERSION; save();
+  db.program=db.program||defaultProgram; db.settings.trainingDays=db.settings.trainingDays||{1:'Upper A',2:'Lower A',4:'Upper B',6:'Lower B'}; db.version=APP_VERSION; save();
 }
 migrateDB();
 function save(){localStorage.setItem('formDB',JSON.stringify(db));}
