@@ -1,4 +1,4 @@
-const CACHE='form-v2.0.0';
+const CACHE='form-v2.1.0';
 const PRECACHE=[
   '/',
   '/index.html',
@@ -39,6 +39,7 @@ const PRECACHE=[
   '/ft-smart-hotfix.js',
   '/ft-calendar.js',
   '/form2.js',
+  '/ft-smart-cards-v2.js',
   '/assets/form-logo.svg',
   '/icon-192.png',
   '/icon-512.png'
