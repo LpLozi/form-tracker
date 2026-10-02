@@ -1,7 +1,7 @@
 /* FORM schedule v3 — scheduled days auto-select, programs remain accessible every day */
 (()=>{
 const FT_SCHEDULE={0:'Göğüs + Triceps',2:'Full Pull',4:'Omuz + Üst Göğüs',5:'Bacak + Karın'};
-const PROGRAM_VERSION='4.2-smart-training-2026-10-01';
+const PROGRAM_VERSION='4.3-shoulder-volume-2026-10-02';
 const FT_PROGRAM={
  'Göğüs + Triceps':[
   {name:'Dumbbell Bench Press',sets:3,reps:'5-8',rir:'1-2',tempo:'2-0-X-0',rest:150,focus:'Göğüs ana kuvvet + hipertrofi',cue:'2 sn kontrollü in → göğüste esne → güçlü it.',finish:'Failure yok; son sette en fazla 1 RIR.'},
@@ -22,6 +22,7 @@ const FT_PROGRAM={
   {name:'Machine Shoulder Press',sets:3,reps:'6-10',rir:'1-2',tempo:'2-0-X-0',rest:150,focus:'Omuz press gücü + ön/yan delt',cue:'2 sn indir → belden destek alma → güçlü it.',finish:'Failure yok; 1–2 RIR.'},
   {name:'Plate-Loaded Incline Press',sets:3,reps:'8-12',rir:'1-2',tempo:'2-0-X-0',rest:120,focus:'İkinci üst göğüs teması',cue:'Kürek kemikleri sabit → kontrollü indir → üst göğüsle it.',finish:'Son set en fazla 1 RIR; omuz öne kaçmasın.'},
   {name:'Cable Lateral Raise',sets:4,reps:'12-20',rir:'1',tempo:'3-0-1-0',rest:60,focus:'Yan omuz + V-taper',cue:'Dirsekle kaldır → omzu silkme → 3 sn indir.',finish:'Son set 0–1 RIR.'},
+  {name:'Reverse Pec Deck',sets:2,reps:'12-15',rir:'1',tempo:'3-0-1-1',rest:75,focus:'Arka omuz + 3D omuz görünümü',cue:'Omzu yükseltme → kolları aç → 1 sn arka omuzu sık.',finish:'Son set 0–1 RIR; momentum yok.'},
   {name:'Cable Fly — Low to High',sets:2,reps:'12-15',rir:'1',tempo:'3-0-1-1',rest:75,focus:'Üst göğüs izolasyonu',cue:'Aşağıdan yukarı getir → 1 sn sık → 3 sn kontrollü aç.',finish:'Son set 0–1 RIR; ağırlık değil göğüs hissi öncelik.'},
   {name:'Single-Arm Cable Lat Pulldown',sets:2,reps:'10-15',rir:'1',tempo:'3-0-1-1',rest:75,focus:'İkinci lat teması + V-taper',cue:'Tam uzat → dirseği kalçaya çek → 1 sn latı sık.',finish:'Son set 0–1 RIR; gövdeyi döndürme.'},
   {name:'Cable Triceps Pushdown',sets:2,reps:'10-15',rir:'1',tempo:'2-0-1-1',rest:75,focus:'Triceps destek hacmi',cue:'Dirsekleri kilitle → aşağı aç → 1 sn sık.',finish:'Son set 0–1 RIR.'}
