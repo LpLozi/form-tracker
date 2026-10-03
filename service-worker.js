@@ -1,4 +1,4 @@
-const CACHE='form-v2.1.1';
+const CACHE='form-v2.1.2';
 const PRECACHE=[
   '/',
   '/index.html',
@@ -10,7 +10,9 @@ const PRECACHE=[
   '/nutrition-plus.js',
   '/nutrition-raw-foods.js',
   '/nutrition-ui-v2.css',
+  '/nutrition-plan-v3.css',
   '/nutrition-ui-v2.js',
+  '/nutrition-plan-v3.js',
   '/nutrition-meal-tabs.css',
   '/nutrition-meal-tabs.js',
   '/nutrition-mobile-fix.css',
