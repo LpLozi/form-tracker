@@ -1,4 +1,4 @@
-const CACHE='form-v2.1.4';
+const CACHE='form-v2.1.5';
 const PRECACHE=[
   '/',
   '/index.html',

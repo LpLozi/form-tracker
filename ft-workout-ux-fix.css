@@ -19,3 +19,8 @@
 .workout-footer.ft-footer-compact,.workout-footer{padding:3px 0 1px!important;bottom:74px!important}.workout-footer button{padding:8px 10px!important;font-size:11px!important;border-radius:10px!important}
 .form-current-banner{padding:6px 8px!important}.form-current-banner b{font-size:12px!important}.form-current-banner span{font-size:7px!important}.form-current-banner strong{font-size:9px!important}.form-workout-progress{height:3px!important}
 }
+
+/* Glass technique notes: readable, compact, expandable on mobile and desktop */
+.ft-glass-note summary{cursor:pointer;min-height:28px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;font-weight:750}
+.ft-glass-note>div{font-size:11px;line-height:1.5}
+@media(max-width:900px){.ft-glass-note summary{min-height:30px;font-size:11px!important;padding:4px 3px!important}.ft-glass-note>div{font-size:11px!important;line-height:1.45!important;padding:5px 4px 7px!important}}
