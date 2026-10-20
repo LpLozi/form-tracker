@@ -1,7 +1,7 @@
 /* FORM 2.0 — compact goal layer */
 (()=>{'use strict';
-const VER='2.1.0',S={0:'Göğüs + Triceps',2:'Full Pull',4:'Omuz + Üst Göğüs',5:'Bacak + Karın'};
-const F={'Göğüs + Triceps':'Göğüs önceliği • göğüs doluluğu • triceps','Full Pull':'Lat genişliği • orta sırt • arka omuz • biceps','Omuz + Üst Göğüs':'Yan omuz • üst göğüs • V-taper','Bacak + Karın':'Bacak gücü • posterior chain • core'};
+const VER='2.1.6',S={0:'1. Gün — Göğüs / Arka Kol',2:'2. Gün — Sırt / Pazu',4:'3. Gün — Omuz / Karın',5:'4. Gün — Bacak'};
+const F={'1. Gün — Göğüs / Arka Kol':'Göğüs • Arka Kol','2. Gün — Sırt / Pazu':'Sırt • Pazu','3. Gün — Omuz / Karın':'Omuz • Karın','4. Gün — Bacak':'Bacak'};
 const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const D=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
 function dbx(){try{return db}catch{return window.db}}
@@ -37,7 +37,7 @@ function panel(){
 function workout(){
  if(document.getElementById('f2work'))return;const d=dbx(),p=window._wk,rows=d?.program?.[p]||[],first=document.querySelector('.workout-card');if(!first||!rows.length)return;
  const h=document.createElement('div');h.id='f2work';h.className='f2work';h.innerHTML='<div><small>'+E(p)+'</small><h2>'+E(F[p]||'Kaliteli setler • kontrollü progresyon')+'</h2><p>'+rows.length+' hareket • '+rows.reduce((a,x)=>a+(+x.sets||0),0)+' çalışma seti</p></div><b>Önce rep → sonra kilo</b>';first.insertAdjacentElement('beforebegin',h);
- [...document.querySelectorAll('.workout-card')].slice(0,rows.length).forEach((c,i)=>{const x=rec(rows[i]),t=c.querySelector('.ftv3-target');if(t)t.innerHTML='<span>'+E(x[0])+'</span><b>'+E(x[1])+'</b>'});
+ [...document.querySelectorAll('.workout-card')].slice(0,rows.length).forEach((c,i)=>{const x=rows[i].source==='exact-screenshots-2026-10-20'?null:rec(rows[i]),t=c.querySelector('.ftv3-target');if(t&&x)t.innerHTML='<span>'+E(x[0])+'</span><b>'+E(x[1])+'</b>'});
 }
 function pr(name){let b=null;hist(name).forEach(w=>sets(w.exercises.find(e=>e.name===name)).forEach(s=>{const q=(+s.weight||0)*(1+(+s.reps||0)/30);if(!b||q>b.q)b={q,kg:+s.weight||0,r:+s.reps||0,date:w.date}}));return b}
 function comparePhotos(d){const rows=[...(d.photos||[])].filter(x=>x?.data&&x?.pose).sort((a,b)=>String(a.date).localeCompare(String(b.date))),poses=[...new Set(rows.map(x=>x.pose))],pose=poses.find(p=>rows.filter(x=>x.pose===p).length>=2);if(!pose)return'<div class="muted f2compare-empty">Aynı pozdan iki fotoğraf eklediğinde başlangıç–güncel karşılaştırması burada oluşacak.</div>';const same=rows.filter(x=>x.pose===pose),a=same[0],b=same.at(-1);return'<div class="f2compare"><div><span>Başlangıç • '+E(pose)+'</span><img src="'+a.data+'"><small>'+E(a.date)+'</small></div><div><span>Güncel • '+E(pose)+'</span><img src="'+b.data+'"><small>'+E(b.date)+'</small></div></div>'}
