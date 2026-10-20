@@ -10,7 +10,7 @@ function targetFor(e,index){
  return parts.length===1?parts[0]:(parts[index]||'—');
 }
 function addBadge(head,e){
- if(!head||head.querySelector('.ft-exact-tagline'))return;
+ if(!head||head.closest('.workout-card')?.querySelector('.ft-exact-tagline'))return;
  const badge=document.createElement('div');badge.className='ft-exact-tagline';
  badge.innerHTML='<span class="ft-exact-group">'+esc(e.group||'')+'</span>'+
   (e.stretch?'<span class="ft-exact-pill">Esneme • '+esc(e.reps)+'</span>':'')+
