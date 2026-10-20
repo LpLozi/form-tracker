@@ -1,45 +1,58 @@
 /* FORM schedule v3 — scheduled days auto-select, programs remain accessible every day */
 (()=>{
-const FT_SCHEDULE={0:'Göğüs + Triceps',2:'Full Pull',4:'Omuz + Üst Göğüs',5:'Bacak + Karın'};
-const PROGRAM_VERSION='4.4-balanced-volume-2026-10-05';
+const FT_SCHEDULE={0:'1. Gün — Göğüs / Arka Kol',2:'2. Gün — Sırt / Pazu',4:'3. Gün — Omuz / Karın',5:'4. Gün — Bacak'};
+const PROGRAM_VERSION='2026-10-20-exact-four-days-v1';
+const ex=(name,sets,reps,group,extra={})=>({name,sets,reps,group,rir:'',source:'exact-screenshots-2026-10-20',...extra});
 const FT_PROGRAM={
- 'Göğüs + Triceps':[
-  {name:'Dumbbell Bench Press',sets:3,reps:'6-10',rir:'1-2',tempo:'2-0-X-0',rest:150,focus:'Göğüs ana kuvvet + hipertrofi',cue:'2 sn kontrollü in → göğüste esne → güçlü it.',finish:'Failure yok; son sette en fazla 1 RIR.'},
-  {name:'Incline Barbell Bench Press',sets:3,reps:'8-10',rir:'1-2',tempo:'2-0-X-0',rest:150,focus:'Üst göğüs hipertrofisi',cue:'2 sn kontrollü indir → üst göğüste gerilimi koru → güçlü it.',finish:'Failure yok; 1–2 RIR korunur.'},
-  {name:'Pec Deck Fly',sets:2,reps:'10-15',rir:'1',tempo:'3-0-1-0',rest:75,focus:'Göğüste uzun kas boyu + kontrollü izolasyon',cue:'3 sn aç → göğüste esne → kontrollü kapat.',finish:'Son set 0–1 RIR; form temizse 8–10 sn yük altında tutuş eklenebilir.'},
-  {name:'Cable Lateral Raise',sets:3,reps:'12-20',rir:'1',tempo:'3-0-1-0',rest:60,focus:'Yan omuz + V-taper',cue:'Dirsekle kaldır → omzu silkme → 3 sn kontrollü indir.',finish:'Son set 0–1 RIR; momentum başlarsa set biter.'},
-  {name:'Rope Triceps Pushdown',sets:3,reps:'10-15',rir:'1',tempo:'2-0-1-1',rest:75,focus:'Triceps hipertrofisi',cue:'Dirsekleri sabitle → aşağı aç → 1 sn sık → kontrollü dön.',finish:'Son set 0–1 RIR kabul.'},
-  {name:'Overhead Rope Triceps Extension',sets:2,reps:'10-15',rir:'1',tempo:'3-0-1-0',rest:75,focus:'Triceps uzun baş + esneme',cue:'Dirsekler sabit → 3 sn esnet → kontrollü uzat.',finish:'Son set 0–1 RIR; omuz pozisyonu bozulmasın.'}
+ '1. Gün — Göğüs / Arka Kol':[
+  ex('Barbell Incline Bench Press',4,'15-10-10-8','Göğüs'),
+  ex('Dumbbell Bench Press',4,'12-12-10-8','Göğüs'),
+  ex('Leverage Decline Chest Press',4,'12-10-10-(5+sb+5)','Göğüs'),
+  ex('Cable Low Fly',4,'12-12-10-8','Göğüs'),
+  ex('Lever Seated Fly',4,'15-12-10-ds','Göğüs'),
+  ex('Standing One Arm Chest Stretch',4,'15s','Göğüs',{stretch:true}),
+  ex('Lever Seated Dip',4,'12-12-(5+sb+5)-10','Arka Kol'),
+  ex('Cable Pushdown (Bar)',4,'12-12-ds-8','Arka Kol'),
+  ex('Cable Overhead Triceps Extension Straight Bar',4,'12-10-10-10','Arka Kol'),
+  ex('Overhead Triceps Stretch',4,'15s','Arka Kol',{stretch:true})
  ],
- 'Full Pull':[
-  {name:'Pull-Up',sets:4,reps:'6-8',rir:'1-2',tempo:'2-1-X-0',rest:150,focus:'Lat genişliği + dikey çekiş gücü',cue:'2 sn uzat → altta 1 sn tam esne → dirsekleri aşağı çek.',finish:'Failure yok; son tekrar formu bozmamalı.'},
-  {name:'Seated Cable Row',sets:3,reps:'6-8',rir:'1-2',tempo:'2-0-X-1',rest:150,focus:'Orta sırt kalınlığı',cue:'Gövde sabit → dirsekleri gövdeye yakın sür → güçlü çek → 1 sn sık → kontrollü uzat.',finish:'Failure yok; 1–2 RIR.'},
-  {name:'Chest-Supported T-Bar Row',sets:2,reps:'8-10',rir:'1-2',tempo:'2-0-1-1',rest:120,focus:'Üst/orta sırt + arka omuz destek',cue:'Göğsü pedden ayırma → dirsekleri biraz dışarı aç → üst/orta sırta çek → 1 sn sık.',finish:'Son set 0–1 RIR yaklaşabilir; gövde pedden ayrılmasın.'},
-  {name:'Straight-Arm Pulldown',sets:2,reps:'12-15',rir:'1',tempo:'3-0-1-1',rest:75,focus:'Lat izolasyonu + uzun kas boyu',cue:'Kollar uzun → 3 sn latı uzat → dirsek açısını bozmadan aşağı çek.',finish:'Son set 0–1 RIR.'},
-  {name:'Reverse Pec Deck',sets:2,reps:'12-20',rir:'1',tempo:'3-0-1-1',rest:75,focus:'Arka omuz',cue:'Omzu yükseltme → kolları aç → 1 sn arka omuzu sık.',finish:'Son set 0–1 RIR; momentum yok.'},
-  {name:'Incline Dumbbell Curl',sets:3,reps:'8-12',rir:'1',tempo:'3-0-1-1',rest:75,focus:'Biceps uzun baş + uzun kas boyu',cue:'Omuz geride sabit → 3 sn kontrollü aç → dirseği oynatmadan curl yap → üstte 1 sn sık.',finish:'Son set 0–1 RIR; omuz öne gelmesin.'},
-  {name:'EZ-Bar Reverse Curl',sets:2,reps:'10-15',rir:'1',tempo:'2-0-1-1',rest:60,focus:'Brachioradialis + ön kol ekstansörleri',cue:'Bileği nötr tut → dirsekleri sabitle → kontrollü kaldır → 1 sn sık.',finish:'Momentum yok; bileği geriye kırma.'},
-  {name:'Wrist Curl',sets:2,reps:'12-20',rir:'1',tempo:'2-1-1-1',rest:45,focus:'Ön kol fleksörleri',cue:'Ön kolu sabitle → bileği tam kontrollü aç → altta esnet → yalnız bilekten kapat.',finish:'Yanma normal; eklem ağrısı varsa seti kes.'}
+ '2. Gün — Sırt / Pazu':[
+  ex('Cable Wide Neutral Grip PullDown',4,'12-(5+sb+5)-12-10','Sırt'),
+  ex('Cable Reverse Grip Straight Back Row',4,'12-12-10-(5+sb+5)','Sırt'),
+  ex('Dumbbell Bent Over Row with Chest Support',4,'12-12-10-8','Sırt'),
+  ex('Cable Palm Rotational Row Back',4,'12-12-10-(5+sb+5)','Sırt'),
+  ex('Seated Row',4,'12-(5+sb+5)-12-10','Sırt'),
+  ex('Side Lat Stretch Back',4,'15s','Sırt',{stretch:true}),
+  ex('Barbell Prone Incline Curl',4,'10-10-10-12','Pazu'),
+  ex('Cable Close Grip Curl',4,'12-12-(5+sb+5)-8','Pazu'),
+  ex('Hammer Curl (Rope)',4,'12-12-10-ds','Pazu'),
+  ex('Elbow Flexor Stretch',4,'15s','Pazu',{stretch:true})
  ],
- 'Omuz + Üst Göğüs':[
-  {name:'Machine Shoulder Press',sets:3,reps:'6-10',rir:'1-2',tempo:'2-0-X-0',rest:150,focus:'Omuz press gücü + ön/yan delt',cue:'2 sn indir → belden destek alma → güçlü it.',finish:'Failure yok; 1–2 RIR.'},
-  {name:'Plate-Loaded Incline Press',sets:3,reps:'8-12',rir:'1-2',tempo:'2-0-X-0',rest:120,focus:'İkinci üst göğüs teması',cue:'Kürek kemikleri sabit → kontrollü indir → üst göğüsle it.',finish:'Son set en fazla 1 RIR; omuz öne kaçmasın.'},
-  {name:'Cable Lateral Raise',sets:4,reps:'12-20',rir:'1',tempo:'3-0-1-0',rest:60,focus:'Yan omuz + V-taper',cue:'Dirsekle kaldır → omzu silkme → 3 sn indir.',finish:'Son set 0–1 RIR.'},
-  {name:'Reverse Pec Deck',sets:2,reps:'12-15',rir:'1',tempo:'3-0-1-1',rest:75,focus:'Arka omuz + 3D omuz görünümü',cue:'Omzu yükseltme → kolları aç → 1 sn arka omuzu sık.',finish:'Son set 0–1 RIR; momentum yok.'},
-  {name:'Cable Fly — Low to High',sets:2,reps:'12-15',rir:'1',tempo:'3-0-1-1',rest:75,focus:'Üst göğüs izolasyonu',cue:'Aşağıdan yukarı getir → 1 sn sık → 3 sn kontrollü aç.',finish:'Son set 0–1 RIR; ağırlık değil göğüs hissi öncelik.'},
-  {name:'Single-Arm Cable Lat Pulldown',sets:2,reps:'10-15',rir:'1',tempo:'3-0-1-1',rest:75,focus:'İkinci lat teması + V-taper',cue:'Tam uzat → dirseği kalçaya çek → 1 sn latı sık.',finish:'Son set 0–1 RIR; gövdeyi döndürme.'},
-  {name:'Preacher Curl',sets:2,reps:'10-15',rir:'1',tempo:'3-0-1-1',rest:75,focus:'Biceps ikinci haftalık temas',cue:'Üst kolu pede sabitle → 3 sn kontrollü aç → dirseği tam kilitlemeden curl yap → üstte 1 sn sık.',finish:'Son set 0–1 RIR; omuzla kaldırma.'}
+ '3. Gün — Omuz / Karın':[
+  ex('Lever Military Press (plate loaded)',4,'15-12-10-10','Omuz'),
+  ex('Dumbbell Arnold Press',4,'12-12-10-10','Omuz'),
+  ex('Dumbbell Seated Lateral to Front Raise',4,'15-12-10-8','Omuz'),
+  ex('Lever Lateral Raise',4,'12-12-ds-10','Omuz'),
+  ex('Dumbbell Seated Bent Over Alternate Rear Delt Fly',4,'12-10-(5+sb+5)-8','Omuz'),
+  ex('Bent Arm Shoulder Stretch',4,'15s','Omuz',{stretch:true}),
+  ex('Cable Shrug',4,'12-10-8-ds','Omuz'),
+  ex('Dumbbell Upright Row',4,'12-10-10-8','Omuz',{note:'*Tekrar sayısı azaldıkça kasılma noktasındaki bekleme süresini arttırıyoruz.',displayReps:'12-10-10-8 *'}),
+  ex('Cable Standing Crunch',4,'12','Karın'),
+  ex('Seated Leg Rise',4,'12','Karın'),
+  ex('Seated 8 Point Leg Crunch',4,'12','Karın'),
+  ex('Lying Abdominal Stretch',4,'15s','Karın',{stretch:true})
  ],
- 'Bacak + Karın':[
-  {name:'Back Squat',sets:3,reps:'6-10',rir:'1-2',tempo:'3-0-X-0',rest:180,focus:'Quad + genel bacak gücü',cue:'3 sn kontrollü in → ayak tabanı sabit → güçlü kalk.',finish:'Failure yok; teknik bozulmadan 1–2 RIR.'},
-  {name:'Romanian Deadlift',sets:3,reps:'6-10',rir:'1-2',tempo:'3-0-1-0',rest:180,focus:'Hamstring + glute uzun kas boyu',cue:'Kalçayı geriye sür → 3 sn alçal → hamstring gerilimini koruyarak kalk.',finish:'Failure yok; bel değil hamstring limitlemeli.'},
-  {name:'Leg Press',sets:2,reps:'10-15',rir:'1',tempo:'3-0-X-0',rest:150,focus:'Quad hipertrofisi',cue:'3 sn kontrollü in → bel pedde → güçlü it.',finish:'Son set 0–1 RIR; pelvis pedden kopmasın.'},
-  {name:'Seated Leg Curl',sets:3,reps:'10-15',rir:'1',tempo:'3-0-1-1',rest:90,focus:'Hamstring hipertrofisi',cue:'3 sn aç → topuğu çek → 1 sn hamstringi sık.',finish:'Son set 0–1 RIR.'},
-  {name:'Leg Extension',sets:2,reps:'12-15',rir:'1',tempo:'3-0-1-1',rest:75,focus:'Quad izolasyonu',cue:'Kontrollü indir → dizi aç → 1 sn quadı sık.',finish:'Son set 0–1 RIR.'},
-  {name:'Standing Calf Raise',sets:2,reps:'8-12',rir:'1',tempo:'2-1-1-1',rest:75,focus:'Gastrocnemius + baldır tam ROM',cue:'2 sn in → altta 1 sn esne → kalk → üstte 1 sn sık.',finish:'Son set 0–1 RIR; sekme yok.'},
-  {name:'Seated Calf Raise',sets:2,reps:'12-20',rir:'1',tempo:'2-1-1-1',rest:60,focus:'Soleus + baldır kalınlığı',cue:'Dizler sabit → topuğu kontrollü indir → altta 1 sn esne → üstte 1 sn sık.',finish:'Son set 0–1 RIR; kısa ROM yapma.'},
-  {name:'Cable Crunch',sets:2,reps:'10-15',rir:'1',tempo:'2-0-1-1',rest:60,focus:'Karın fleksiyonu',cue:'Kaburgayı pelvise yaklaştır → 1 sn sık → kontrollü aç.',finish:'Son set 0–1 RIR; kalçadan kapanma yok.'},
-  {name:'Hanging Knee / Leg Raise',sets:2,reps:'8-15',rir:'1-2',tempo:'2-0-1-1',rest:60,focus:'Alt karın + pelvis kontrolü',cue:'Sallanmayı kes → pelvisi içeri kıvır → kontrollü indir.',finish:'Teknik bozulmadan 1–2 RIR.'}
+ '4. Gün — Bacak':[
+  ex('Smith Full Squat',4,'15-12-10-10','Bacak'),
+  ex('Hack Squat',4,'10-10-10-12','Bacak'),
+  ex('Leg Wide Press',4,'15-12-10-8','Bacak',{supersetWith:'Walking Lunge'}),
+  ex('Walking Lunge',4,'12','Bacak',{supersetWith:'Leg Wide Press'}),
+  ex('Lever Leg Extension',4,'15-12-(5+sb+5)-8','Bacak'),
+  ex('Lever Seated Leg Curl',6,'15-12-(5+sb+5)-12','Bacak',{partialTargets:true}),
+  ex('Smith Calf Raise',6,'15-(5+sb+5)-12-10-10-8','Bacak'),
+  ex('Standing Quadriceps Stretch',4,'15s','Bacak',{stretch:true}),
+  ex('Lying Crossover Knee Pull Up Stretch',4,'15s','Bacak',{stretch:true}),
+  ex('Calf Stretch with Hands Against Wall',4,'15s','Bacak',{stretch:true})
  ]
 };
 const DAY_NAMES=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
@@ -50,7 +63,7 @@ function applySchedule(){
  db.settings=db.settings||{};
  db.settings.programArchive=db.settings.programArchive||{};
  if(db.settings.scheduleVersion!==PROGRAM_VERSION){
-  const key='preBalancedTraining_2026_10_05';
+  const key='beforeExactScreenshots_2026_10_20';
   if(!db.settings.programArchive[key])db.settings.programArchive[key]={savedAt:new Date().toISOString(),program:JSON.parse(JSON.stringify(db.program||{})),trainingDays:JSON.parse(JSON.stringify(db.settings.trainingDays||{}))};
   db.program=JSON.parse(JSON.stringify(FT_PROGRAM));
   db.settings.trainingDays={...FT_SCHEDULE};
