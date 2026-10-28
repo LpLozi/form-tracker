@@ -1,7 +1,7 @@
 /* FORM — 20.10.2026 ekran görüntülerindeki dört günlük planın birebir hedef sunumu */
 (()=>{'use strict';
 const ORIGIN='exact-screenshots-2026-10-20';
-const cardioNames=['1. Gün — Göğüs / Arka Kol','2. Gün — Sırt / Pazu','4. Gün — Bacak'];
+const cardioNames=['1. Gün — Göğüs / Arka Kol','2. Gün — Sırt / Pazu','3. Gün — Omuz / Karın','4. Gün — Bacak'];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function current(){try{return (db.program?.[window._wk]||[]).map(x=>typeof normalizeExercise==='function'?normalizeExercise(x):x)}catch{return []}}
 function isExact(rows){return rows.some(x=>x?.source===ORIGIN)}
