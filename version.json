@@ -1,6 +1,11 @@
 {
-  "version": "2.1.11",
+  "version": "2.1.12",
   "release": "2026-10-28",
   "plan": "ertug-evrekli-exact-4-day-complete",
-  "workoutDays": 4
+  "workoutDays": 4,
+  "features": [
+    "coach-exercise-turkish-instructions",
+    "equipment-pictograms",
+    "video-examples"
+  ]
 }
