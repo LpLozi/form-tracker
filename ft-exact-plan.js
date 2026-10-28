@@ -70,12 +70,12 @@ function decorate(){
  if(!exact)return;
  [...document.querySelectorAll('.workout-card')].slice(0,rows.length).forEach((card,i)=>markCard(card,rows[i],i));
  cardioNote();
- const f=document.getElementById('f2work');if(f)f.querySelector('b:last-child')?.remove();
+ const f=document.getElementById('f2work');if(f){f.querySelector('b:last-child')?.remove();if(!f.querySelector('.ft-exact-coach-label')){const tag=document.createElement('div');tag.className='ft-exact-coach-label';tag.textContent='ERTUĞ EVREKLİ • ORİJİNAL PROGRAM';f.firstElementChild?.prepend(tag)}}
 }
 const css=document.createElement('style');css.id='ftExactPlanCss';css.textContent=`
 body.ft-exact-plan .ftsmart-cue,body.ft-exact-plan .ftsmart-tech,body.ft-exact-plan .ftsmart-tempo,body.ft-exact-plan .ftv3-target{display:none!important}
 body.ft-exact-plan .ftsmart-chips .ftsmart-chip:not(:first-child){display:none!important}
-.ft-exact-tagline{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:0 0 7px}
+.ft-exact-coach-label{font-weight:900;font-size:10px;letter-spacing:.04em;color:#135da8;margin-bottom:4px}.ft-exact-tagline{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:0 0 7px}
 .ft-exact-group{font-size:10px;font-weight:900;letter-spacing:.055em;color:#2556a1;background:#eff5ff;border:1px solid #d7e5ff;padding:4px 7px;border-radius:7px}
 .ft-exact-pill{font-size:10px;font-weight:750;background:#fff8dc;color:#865d0c;border:1px solid #f2da89;padding:4px 6px;border-radius:7px}
 .ft-exact-target-cell,.ft-exact-target-head{text-align:center;white-space:nowrap}
