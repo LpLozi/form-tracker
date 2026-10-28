@@ -1,6 +1,6 @@
 /* FORM smart feature hotfixes */
 (()=>{'use strict';
-const CANON={0:'Göğüs + Triceps',2:'Full Pull',4:'Omuz + Üst Göğüs',5:'Bacak + Karın'};
+const CANON={1:'1. Gün — Göğüs / Arka Kol',2:'2. Gün — Sırt / Pazu',4:'3. Gün — Omuz / Karın',5:'4. Gün — Bacak'};
 const CATCH='formCatchupWorkoutV1';
 const localKey=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 function catchup(){try{return JSON.parse(localStorage.getItem(CATCH)||'null')}catch{return null}}
