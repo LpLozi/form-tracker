@@ -1,6 +1,6 @@
 /* FORM 2.0 — compact goal layer */
 (()=>{'use strict';
-const VER='2.1.8',S={1:'1. Gün — Göğüs / Arka Kol',2:'2. Gün — Sırt / Pazu',4:'3. Gün — Omuz / Karın',5:'4. Gün — Bacak'};
+const VER='2.1.9',S={1:'1. Gün — Göğüs / Arka Kol',2:'2. Gün — Sırt / Pazu',4:'3. Gün — Omuz / Karın',5:'4. Gün — Bacak'};
 const F={'1. Gün — Göğüs / Arka Kol':'Göğüs • Arka Kol','2. Gün — Sırt / Pazu':'Sırt • Pazu','3. Gün — Omuz / Karın':'Omuz • Karın','4. Gün — Bacak':'Bacak'};
 const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const D=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
@@ -30,7 +30,7 @@ function cardioWeek(){const a=new Date();a.setDate(a.getDate()-((a.getDay()+6)%7
 function lifeLine(){const d=dbx(),t=d?.settings?.form2Targets||{steps:9000,cardioSessions:3},steps=Number(d?.habits?.[typeof today==='string'?today:new Date().toISOString().slice(0,10)]?.steps||0);return'Adım '+steps.toLocaleString('tr-TR')+' / '+Number(t.steps||9000).toLocaleString('tr-TR')+' • Kardiyo '+cardioWeek()+' / '+Number(t.cardioSessions||3)}
 function panel(){
  if(document.getElementById('f2today'))return;const p=S[new Date().getDay()]||'',h=document.createElement('section');h.id='f2today';h.className='f2today';
- h.innerHTML='<div><small>BUGÜN • '+D[new Date().getDay()]+'</small><h2>'+(p?E(p):'Toparlanma günü')+'</h2><p>'+(p?E(F[p]):'Toparlanma • düşük/orta tempo kardiyo için uygun gün')+'</p><span>Blok '+block()+'/8 • Bu hafta '+weekDone()+'/4<br>'+lifeLine()+'</span></div>'+(p?'<button class="primary" onclick="window._wk='+JSON.stringify(p)+';go(\'Antrenman\')">Antrenmana başla</button>':'');
+ h.innerHTML='<div><small>ERTUĞ EVREKLİ • 4 GÜNLÜK PROGRAM</small><small>BUGÜN • '+D[new Date().getDay()]+'</small><h2>'+(p?E(p):'Toparlanma günü')+'</h2><p>'+(p?E(F[p]):'Toparlanma • düşük/orta tempo kardiyo için uygun gün')+'</p><span>Blok '+block()+'/8 • Bu hafta '+weekDone()+'/4<br>'+lifeLine()+'</span></div>'+(p?'<button class="primary" onclick="window._wk='+JSON.stringify(p)+';go(\'Antrenman\')">Antrenmana başla</button>':'');
  const hero=document.querySelector('.hero-brand');(hero||document.querySelector('#app>*'))?.insertAdjacentElement('afterend',h);
  const c=document.getElementById('coachToday');if(c){const q=c.querySelector('.coach-today-head h2');if(q)q.textContent='Bel küçülürken performansı koru'}
 }
