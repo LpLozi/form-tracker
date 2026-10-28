@@ -1,7 +1,7 @@
 /* FORM schedule v3 — scheduled days auto-select, programs remain accessible every day */
 (()=>{
 const FT_SCHEDULE={1:'1. Gün — Göğüs / Arka Kol',2:'2. Gün — Sırt / Pazu',4:'3. Gün — Omuz / Karın',5:'4. Gün — Bacak'};
-const PROGRAM_VERSION='2026-10-28-exact-four-days-v3';
+const PROGRAM_VERSION='2026-10-28-exact-four-days-v4';
 const ex=(name,sets,reps,group,extra={})=>({name,sets,reps,group,rir:'',source:'exact-screenshots-2026-10-20',...extra});
 const FT_PROGRAM={
  '1. Gün — Göğüs / Arka Kol':[
@@ -11,6 +11,7 @@ const FT_PROGRAM={
   ex('Cable Low Fly',4,'12-12-10-8','Göğüs'),
   ex('Lever Seated Fly',4,'15-12-10-ds','Göğüs'),
   ex('Standing One Arm Chest Stretch',4,'15s','Göğüs',{stretch:true}),
+  ex('Straight Arms Backward Chest Stretch',4,'15s','Göğüs',{stretch:true}),
   ex('Lever Seated Dip',4,'12-12-(5+sb+5)-10','Arka Kol'),
   ex('Cable Pushdown (Bar)',4,'12-12-ds-8','Arka Kol'),
   ex('Cable Overhead Triceps Extension Straight Bar',4,'12-10-10-10','Arka Kol'),
@@ -23,6 +24,7 @@ const FT_PROGRAM={
   ex('Cable Palm Rotational Row Back',4,'12-12-10-(5+sb+5)','Sırt'),
   ex('Seated Row',4,'12-(5+sb+5)-12-10','Sırt'),
   ex('Side Lat Stretch Back',4,'15s','Sırt',{stretch:true}),
+  ex('Bar Back Stretch',4,'15s','Sırt',{stretch:true}),
   ex('Barbell Prone Incline Curl',4,'10-10-10-12','Pazu'),
   ex('Cable Close Grip Curl',4,'12-12-(5+sb+5)-8','Pazu'),
   ex('Hammer Curl (Rope)',4,'12-12-10-ds','Pazu'),
@@ -35,8 +37,9 @@ const FT_PROGRAM={
   ex('Lever Lateral Raise',4,'12-12-ds-10','Omuz'),
   ex('Dumbbell Seated Bent Over Alternate Rear Delt Fly',4,'12-10-(5+sb+5)-8','Omuz'),
   ex('Bent Arm Shoulder Stretch',4,'15s','Omuz',{stretch:true}),
-  ex('Cable Shrug',4,'12-10-8-ds','Omuz'),
-  ex('Dumbbell Upright Row',4,'12-10-10-8','Omuz',{note:'*Tekrar sayısı azaldıkça kasılma noktasındaki bekleme süresini arttırıyoruz.',displayReps:'12-10-10-8 *'}),
+  ex('Standing Reverse Shoulder Stretch',4,'15s','Omuz',{stretch:true}),
+  ex('Cable Shrug',4,'12-10-8-ds','Trapez'),
+  ex('Dumbbell Upright Row',4,'12-10-10-8','Trapez',{note:'*Tekrar sayısı azaldıkça kasılma noktasındaki bekleme süresini arttırıyoruz.',displayReps:'12-10-10-8 *'}),
   ex('Cable Standing Crunch',4,'12','Karın'),
   ex('Seated Leg Rise',4,'12','Karın'),
   ex('Seated 8 Point Leg Crunch',4,'12','Karın'),
@@ -72,7 +75,7 @@ function applySchedule(){
  const needsDays=Object.keys(FT_SCHEDULE).some(d=>db.settings.trainingDays?.[d]!==FT_SCHEDULE[d])||
   Object.keys(db.settings.trainingDays||{}).length!==Object.keys(FT_SCHEDULE).length;
  if(db.settings.scheduleVersion!==PROGRAM_VERSION||needsProgram||needsDays){
-  const key='beforeErtugExactReapply_2026_10_27';
+  const key='beforeErtugExactReapply_2026_10_28_v4';
   if(!db.settings.programArchive[key])db.settings.programArchive[key]={
    savedAt:new Date().toISOString(),
    program:JSON.parse(JSON.stringify(db.program||{})),
