@@ -1,6 +1,6 @@
 /* FORM PWA update guard — non-destructive update prompt for iPhone Home Screen apps */
 (()=>{'use strict';
- const CURRENT='2.1.10';
+ const CURRENT='2.1.11';
  const VERSION_URL='/version.json';
  const INTERVAL=120000;
  let lastCheck=0,checking=false,prompted='';
