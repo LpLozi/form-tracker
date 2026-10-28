@@ -1,7 +1,7 @@
 /* FORM schedule v3 — scheduled days auto-select, programs remain accessible every day */
 (()=>{
 const FT_SCHEDULE={1:'1. Gün — Göğüs / Arka Kol',2:'2. Gün — Sırt / Pazu',4:'3. Gün — Omuz / Karın',5:'4. Gün — Bacak'};
-const PROGRAM_VERSION='2026-10-27-exact-four-days-v2';
+const PROGRAM_VERSION='2026-10-28-exact-four-days-v3';
 const ex=(name,sets,reps,group,extra={})=>({name,sets,reps,group,rir:'',source:'exact-screenshots-2026-10-20',...extra});
 const FT_PROGRAM={
  '1. Gün — Göğüs / Arka Kol':[
@@ -59,21 +59,31 @@ const DAY_NAMES=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cu
 function localDate(){const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`}
 function todayWorkout(){return FT_SCHEDULE[new Date().getDay()]||null}
 function nextWorkout(){for(let i=1;i<=7;i++){const d=new Date();d.setDate(d.getDate()+i);const p=FT_SCHEDULE[d.getDay()];if(p)return{day:DAY_NAMES[d.getDay()],plan:p}}return null}
+function hasExactCoachPlan(p){
+ const names=Object.keys(FT_PROGRAM);
+ return !!p&&Object.keys(p).length===names.length&&names.every(n=>
+  Array.isArray(p[n])&&p[n].length===FT_PROGRAM[n].length&&
+  p[n].every((x,i)=>x&&x.source==='exact-screenshots-2026-10-20'&&x.name===FT_PROGRAM[n][i].name&&Number(x.sets)===Number(FT_PROGRAM[n][i].sets)));
+}
 function applySchedule(){
  db.settings=db.settings||{};
  db.settings.programArchive=db.settings.programArchive||{};
- if(db.settings.scheduleVersion!==PROGRAM_VERSION){
-  // 27 Ekim: Eski kullanıcı programını sakla; geçmiş antrenman kayıtlarını değiştirme.
+ const needsProgram=!hasExactCoachPlan(db.program);
+ const needsDays=Object.keys(FT_SCHEDULE).some(d=>db.settings.trainingDays?.[d]!==FT_SCHEDULE[d])||
+  Object.keys(db.settings.trainingDays||{}).length!==Object.keys(FT_SCHEDULE).length;
+ if(db.settings.scheduleVersion!==PROGRAM_VERSION||needsProgram||needsDays){
   const key='beforeErtugExactReapply_2026_10_27';
-  if(!db.settings.programArchive[key])db.settings.programArchive[key]={savedAt:new Date().toISOString(),program:JSON.parse(JSON.stringify(db.program||{})),trainingDays:JSON.parse(JSON.stringify(db.settings.trainingDays||{}))};
-  db.program=JSON.parse(JSON.stringify(FT_PROGRAM));
+  if(!db.settings.programArchive[key])db.settings.programArchive[key]={
+   savedAt:new Date().toISOString(),
+   program:JSON.parse(JSON.stringify(db.program||{})),
+   trainingDays:JSON.parse(JSON.stringify(db.settings.trainingDays||{}))
+  };
+  if(needsProgram)db.program=JSON.parse(JSON.stringify(FT_PROGRAM));
   db.settings.trainingDays={...FT_SCHEDULE};
   db.settings.scheduleVersion=PROGRAM_VERSION;
-  if(typeof save==='function')save();
- }else{
-  db.program=db.program||JSON.parse(JSON.stringify(FT_PROGRAM));
-  db.settings.trainingDays=db.settings.trainingDays||{...FT_SCHEDULE};
+  try{if(typeof save==='function')save()}catch(e){console.warn('FORM program kaydı başarısız:',e)}
  }
+ if(!window._wk||!db.program?.[window._wk])window._wk=FT_SCHEDULE[new Date().getDay()]||Object.keys(FT_PROGRAM)[0];
 }
 applySchedule();
 
