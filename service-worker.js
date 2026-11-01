@@ -1,55 +1,8 @@
-const CACHE='form-v2.1.12';
-const PRECACHE=[
-  '/',
-  '/index.html',
-  '/app-base.html',
-  '/manifest.webmanifest',
-  '/upgrade.css',
-  '/upgrade.js',
-  '/nutrition-plus.css',
-  '/nutrition-plus.js',
-  '/nutrition-raw-foods.js',
-  '/nutrition-ui-v2.css',
-  '/nutrition-plan-v3.css',
-  '/nutrition-ui-v2.js',
-  '/nutrition-plan-v3.js',
-  '/nutrition-meal-tabs.css',
-  '/nutrition-meal-tabs.js',
-  '/nutrition-mobile-fix.css',
-  '/workout-plus.css',
-  '/workout-plus.js',
-  '/workout-ui-v2.css',
-  '/workout-ui-v2.js',
-  '/ft-workout-ux-fix.css',
-  '/ft-workout-ux-fix.js',
-  '/ft-training-v3.css',
-  '/ft-training-v3.js',
-  '/ft-strong-keypad.css',
-  '/ft-strong-keypad.js',
-  '/ft-library-hotfix.js',
-  '/form2-preflight.js',
-  '/coach-plus.css',
-  '/coach-plus.js',
-  '/coach-refine.js',
-  '/mobile-fix.css',
-  '/mobile-fix.js',
-  '/exercise-library.css',
-  '/exercise-library.js',
-  '/schedule-v2.js',
-  '/ft-workout-smart.js',
-  '/ft-life-smart.js',
-  '/ft-smart-hotfix.js',
-  '/ft-calendar.js',
-  '/form2.js',
-  '/ft-smart-cards-v2.js',
-  '/ft-exact-plan.js',
-  '/ft-exercise-howto.js',
-  '/ft-update-guard.js',
-  '/assets/form-logo.svg',
-  '/icon-192.png',
-  '/icon-512.png'
-];
-const PRECACHE_SET=new Set(PRECACHE);
-self.addEventListener('install',event=>{self.skipWaiting();event.waitUntil((async()=>{const cache=await caches.open(CACHE);await Promise.allSettled(PRECACHE.map(async url=>{const response=await fetch(url,{cache:'reload'});if(response.ok)await cache.put(url,response)}))})())});
-self.addEventListener('activate',event=>{event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(key=>key.startsWith('form-')&&key!==CACHE).map(key=>caches.delete(key)));await self.clients.claim()})())});
-self.addEventListener('fetch',event=>{if(event.request.method!=='GET')return;const url=new URL(event.request.url);if(url.origin!==self.location.origin)return;if(event.request.mode==='navigate'){event.respondWith((async()=>{try{const response=await fetch(event.request,{cache:'no-store'});if(response&&response.ok){const cache=await caches.open(CACHE);await cache.put('/index.html',response.clone())}return response}catch(_){return (await caches.match('/index.html'))||(await caches.match('/'))||Response.error()}})());return}if(!PRECACHE_SET.has(url.pathname)&&!/[.](?:css|js|png|svg|webmanifest)$/.test(url.pathname))return;event.respondWith((async()=>{try{const response=await fetch(event.request,{cache:'no-store'});if(response&&response.ok){const cache=await caches.open(CACHE);await cache.put(url.pathname,response.clone());return response}}catch(_){ }return (await caches.match(url.pathname))||Response.error()})())});
+const CACHE='form-v3.0.0';
+const FILES=['/','/index.html','/form-app.css?v=300','/form-data.js?v=300','/form-model.js?v=300','/form-store.js?v=300','/form-app.js?v=300','/manifest.webmanifest','/icon-192.png','/icon-512.png'];
+self.addEventListener('install',event=>event.waitUntil((async()=>{const cache=await caches.open(CACHE);await cache.addAll(FILES);await self.skipWaiting();})()));
+self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
+self.addEventListener('fetch',event=>{const u=new URL(event.request.url);if(event.request.method!=='GET'||u.origin!==self.location.origin)return;
+ if(event.request.mode==='navigate'){event.respondWith(fetch(event.request).catch(async()=>{const c=await caches.open(CACHE);return await c.match('/index.html')||Response.error();}));return;}
+ if(FILES.some(f=>new URL(f,self.location.origin).pathname===u.pathname))event.respondWith((async()=>{const c=await caches.open(CACHE);return await c.match(event.request,{ignoreSearch:true})||fetch(event.request);})());
+});
