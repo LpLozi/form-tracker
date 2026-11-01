@@ -1,1 +1,1 @@
-{"version":"3.0.0","release":"2026-11-01","plan":"balanced-ulpp-2026-11","workoutDays":4,"features":["transactional-local-records","versioned-program","resumable-workout","three-meal-nutrition","backup-recovery"]}
+{"version": "3.0.1", "release": "2026-11-01", "plan": "balanced-ulpp-2026-11", "workoutDays": 4, "features": ["transactional-local-records", "versioned-program", "resumable-workout", "three-meal-nutrition", "backup-recovery"]}

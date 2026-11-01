@@ -1,8 +1,8 @@
-const CACHE='form-v3.0.0';
-const FILES=['/','/index.html','/form-app.css?v=300','/form-data.js?v=300','/form-model.js?v=300','/form-store.js?v=300','/form-app.js?v=300','/manifest.webmanifest','/icon-192.png','/icon-512.png'];
+const CACHE='form-v3.0.1';
+const FILES=['/','/index.html','/form-app.css?v=301','/form-data.js?v=301','/form-model.js?v=301','/form-store.js?v=301','/form-app.js?v=301','/manifest.webmanifest','/icon-192.png','/icon-512.png'];
 self.addEventListener('install',event=>event.waitUntil((async()=>{const cache=await caches.open(CACHE);await cache.addAll(FILES);await self.skipWaiting();})()));
 self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
 self.addEventListener('fetch',event=>{const u=new URL(event.request.url);if(event.request.method!=='GET'||u.origin!==self.location.origin)return;
  if(event.request.mode==='navigate'){event.respondWith(fetch(event.request).catch(async()=>{const c=await caches.open(CACHE);return await c.match('/index.html')||Response.error();}));return;}
- if(FILES.some(f=>new URL(f,self.location.origin).pathname===u.pathname))event.respondWith((async()=>{const c=await caches.open(CACHE);return await c.match(event.request,{ignoreSearch:true})||fetch(event.request);})());
+ if(FILES.some(f=>new URL(f,self.location.origin).pathname===u.pathname))event.respondWith((async()=>{const c=await caches.open(CACHE);return await c.match(event.request)||fetch(event.request);})());
 });

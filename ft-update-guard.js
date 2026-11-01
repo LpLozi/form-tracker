@@ -38,7 +38,7 @@
    let r;try{r=await fetch(VERSION_URL+'?check='+Date.now(),{cache:'no-store',signal:controller.signal})}finally{clearTimeout(timeout)}
    if(!r?.ok)return;
    const j=await r.json();
-   if(j&&newer(j.version,CURRENT))promptUpdate(String(j.version));
+   if(j&&newer(j.version,CURRENT)){if(!window._workoutStart){location.replace('/index.html?form_release='+encodeURIComponent(j.version)+'#workout');return;}promptUpdate(String(j.version));}
   }catch(e){}finally{checking=false}
  }
  window.FORM_UPDATE_GUARD={version:CURRENT,check:()=>check(true)};

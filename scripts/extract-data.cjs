@@ -1,5 +1,5 @@
 const fs=require('node:fs'),vm=require('node:vm');
-const base=fs.readFileSync('app-base.html','utf8');
+const base=fs.readFileSync('legacy/app-base-v2.html','utf8');
 const foodCode=base.slice(base.indexOf('const makeFood='),base.indexOf('const defaultProgram='));
 const foods=vm.runInNewContext(foodCode+';defaultFoods');
 for(const [file,start,end] of [['nutrition-raw-foods.js','const RAW_FOODS=',';\n'],['nutrition-plan-v3.js','const PLAN_FOODS=',';\n']]){
