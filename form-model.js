@@ -85,5 +85,17 @@ function volume(d,date){const planned={},done={};for(const rows of Object.values
  return {planned,done};}
 function newDraft(d,type,date=day(),short=false){const rows=(d.program[type]||[]).map(normalizeExercise);const id=typeof crypto!=='undefined'&&crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random();return {id,date,type,planId:d.form3.planId,startedAt:Date.now(),pausedAt:null,pausedMs:0,index:0,short,exercises:rows.map((e,i)=>({...e,setData:Array.from({length:short?Math.min(e.sets,i<3?3:2):e.sets},()=>({weight:'',reps:'',rir:'',done:false,setType:'working'})),note:'',equipmentKey:'',skipped:false})),restEnd:null,rpe:'',satisfaction:'',cardio:{type:'',minutes:''}};}
 function finished(draft,now=Date.now()){return {...clone(draft),durationSec:Math.max(0,Math.round(((draft.pausedAt||now)-draft.startedAt-(draft.pausedMs||0))/1000)),finishedAt:new Date(now).toISOString(),exercises:draft.exercises.map(e=>({...e,exerciseId:e.id,repRange:e.reps,targetRir:e.rir,setData:e.setData.filter(s=>s.done).map((s,i)=>({...s,set:i+1,weight:number(s.weight),reps:number(s.reps),rir:number(s.rir)}))}))};}
-return {VERSION,PLAN,clone,number,day,shift,weekday,week,validDay,catalog,get,program,migrate,validBackup,planAt,normalizeExercise,workingSets,history,advice,totals,mealItems,nutritionWeek,volume,newDraft,finished};
+function exerciseStats(d,e){
+ const sessions=history(d,e).map(w=>{const sets=(w.exercises||[]).filter(x=>x.name===e.name&&(x.equipmentKey||'')===(e.equipmentKey||'')).flatMap(workingSets);return {date:w.date,sets,volume:sets.reduce((n,s)=>n+(number(s.weight)||0)*(number(s.reps)||0),0),best:Math.max(0,...sets.map(s=>number(s.weight)||0))};});
+ return {sessions,sets:sessions.flatMap(s=>s.sets)};
+}
+function repRecord(d,e,s,others=[]){
+ if(s.setType==='warmup'||s.setType==='Isınma'||!(number(s.weight)>0)||!(number(s.reps)>0))return null;
+ const prior=exerciseStats(d,e).sets.concat(others.filter(x=>x!==s&&workingSets({setData:[x]}).length));
+ const comparable=prior.filter(x=>number(x.reps)>=number(s.reps));
+ if(!comparable.length)return null;
+ const best=Math.max(...comparable.map(x=>number(x.weight)||0));
+ return number(s.weight)>best?{reps:number(s.reps),weight:number(s.weight),delta:number(s.weight)-best}:null;
+}
+return {exerciseStats,repRecord,VERSION,PLAN,clone,number,day,shift,weekday,week,validDay,catalog,get,program,migrate,validBackup,planAt,normalizeExercise,workingSets,history,advice,totals,mealItems,nutritionWeek,volume,newDraft,finished};
 });
