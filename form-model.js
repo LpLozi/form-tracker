@@ -1,7 +1,7 @@
 /* FORM 3: pure data rules, also exercised by node:test. */
 (function(root,factory){const api=factory();if(typeof module==='object')module.exports=api;else root.FormModel=api;})(typeof window==='object'?window:this,function(){
 'use strict';
-const VERSION='3.2.1',PLAN='balanced-ulpp-2026-11';
+const VERSION='3.2.2',PLAN='balanced-ulpp-2026-11';
 const clone=x=>JSON.parse(JSON.stringify(x));
 const number=x=>x===null||x===undefined||String(x).trim()===''?null:(Number.isFinite(Number(String(x).replace(',','.')))?Number(String(x).replace(',','.')):null);
 const day=(d=new Date())=>{const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d);return ['year','month','day'].map(k=>p.find(x=>x.type===k).value).join('-')};
