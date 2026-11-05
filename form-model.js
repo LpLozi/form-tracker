@@ -1,7 +1,7 @@
 /* FORM 3: pure data rules, also exercised by node:test. */
 (function(root,factory){const api=factory();if(typeof module==='object')module.exports=api;else root.FormModel=api;})(typeof window==='object'?window:this,function(){
 'use strict';
-const VERSION='3.2.2',PLAN='balanced-ulpp-2026-11';
+const VERSION='3.2.3',PLAN='balanced-ulpp-2026-11';
 const clone=x=>JSON.parse(JSON.stringify(x));
 const number=x=>x===null||x===undefined||String(x).trim()===''?null:(Number.isFinite(Number(String(x).replace(',','.')))?Number(String(x).replace(',','.')):null);
 const day=(d=new Date())=>{const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d);return ['year','month','day'].map(k=>p.find(x=>x.type===k).value).join('-')};
@@ -66,6 +66,15 @@ function migrate(input,foods=[],legacy={},date=day()){
 }
 function validBackup(d){if(d?.form3){const f=d.form3;if(!['history','habits','favoriteMeals','trash'].every(k=>Array.isArray(f[k]))||!['equipment','mealPlans','nutritionComplete'].every(k=>f[k]&&typeof f[k]==='object'&&!Array.isArray(f[k]))||!f.history.every(h=>h&&validDay(h.effectiveFrom)&&h.schedule&&h.program&&Object.values(h.program).every(Array.isArray))||!d.program||!Object.values(d.program).every(Array.isArray)||f.draft&&(!Array.isArray(f.draft.exercises)||!f.draft.exercises.length||!f.draft.exercises.every(e=>Array.isArray(e.setData))))return false;}return !!d&&typeof d==='object'&&!Array.isArray(d)&&Array.isArray(d.workouts)&&Array.isArray(d.foods)&&Array.isArray(d.measurements)&&d.meals&&typeof d.meals==='object'&&!Array.isArray(d.meals)&&d.foods.every(f=>f&&typeof f.name==='string')&&d.workouts.every(w=>w&&validDay(w.date)&&Array.isArray(w.exercises||[]));}
 function planAt(d,date){const versions=d.form3?.history||[];const h=versions.filter(h=>h.effectiveFrom<=date).at(-1);return h?{name:h.schedule[weekday(date)]||null,program:h.program,id:h.id}:{name:null,program:{}};}
+// Match completed sessions to plan slots within their actual Monday–Sunday week.
+// Each session can complete only one slot; exact-day matches take priority.
+function trainingWeek(d,date){
+ const start=week(date),end=shift(start,6),slots=Array.from({length:7},(_,i)=>{const date=shift(start,i),p=planAt(d,date);return {date,type:p.name,planId:p.id,workout:null};}).filter(s=>s.type);
+ const sessions=d.workouts.filter(w=>w.date>=start&&w.date<=end).slice().sort((a,b)=>a.date.localeCompare(b.date)||String(a.id||'').localeCompare(String(b.id||'')));
+ const used=new Set(),matches=(s,w)=>s.type===w.type&&(!w.planId||!s.planId||s.planId===w.planId);
+ for(const exact of [true,false])for(const s of slots){if(s.workout)continue;const w=sessions.find(w=>!used.has(w)&&matches(s,w)&&(!exact||w.date===s.date));if(w){s.workout=w;used.add(w);}}
+ return {start,end,slots,sessions};
+}
 function workingSets(e){return (e.setData||[]).filter(s=>s.done&&s.setType!=='warmup'&&s.setType!=='Isınma'&&number(s.reps)>0);}
 function history(d,e){return d.workouts.filter(w=>(w.exercises||[]).some(x=>x.name===e.name&&(x.equipmentKey||'')===(e.equipmentKey||'')&&workingSets(x).length)).slice().sort((a,b)=>a.date.localeCompare(b.date)||String(a.id||'').localeCompare(String(b.id||'')));}
 function advice(d,e){
@@ -97,5 +106,5 @@ function repRecord(d,e,s,others=[]){
  const best=Math.max(...comparable.map(x=>number(x.weight)||0));
  return number(s.weight)>best?{reps:number(s.reps),weight:number(s.weight),delta:number(s.weight)-best}:null;
 }
-return {exerciseStats,repRecord,VERSION,PLAN,clone,number,day,shift,weekday,week,validDay,catalog,get,program,migrate,validBackup,planAt,normalizeExercise,workingSets,history,advice,totals,mealItems,nutritionWeek,volume,newDraft,finished};
+return {trainingWeek,exerciseStats,repRecord,VERSION,PLAN,clone,number,day,shift,weekday,week,validDay,catalog,get,program,migrate,validBackup,planAt,normalizeExercise,workingSets,history,advice,totals,mealItems,nutritionWeek,volume,newDraft,finished};
 });
