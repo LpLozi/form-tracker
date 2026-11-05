@@ -1,7 +1,7 @@
 /* FORM 3: pure data rules, also exercised by node:test. */
 (function(root,factory){const api=factory();if(typeof module==='object')module.exports=api;else root.FormModel=api;})(typeof window==='object'?window:this,function(){
 'use strict';
-const VERSION='3.2.3',PLAN='balanced-ulpp-2026-11';
+const VERSION='3.2.4',PLAN='balanced-ulpp-2026-11';
 const clone=x=>JSON.parse(JSON.stringify(x));
 const number=x=>x===null||x===undefined||String(x).trim()===''?null:(Number.isFinite(Number(String(x).replace(',','.')))?Number(String(x).replace(',','.')):null);
 const day=(d=new Date())=>{const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d);return ['year','month','day'].map(k=>p.find(x=>x.type===k).value).join('-')};
@@ -11,6 +11,8 @@ const week=s=>shift(s,-((weekday(s)+6)%7));
 const validDay=s=>/^\d{4}-\d{2}-\d{2}$/.test(s)&&!isNaN(new Date(s+'T12:00:00Z'))&&new Date(s+'T12:00:00Z').toISOString().slice(0,10)===s;
 const ex=(id,name,tr,group,pattern,equipment,how,secondary=[],bodyweight=false)=>({id,name,tr,group,pattern,equipment,how,secondary,bodyweight});
 const catalog=[
+ ex('close-grip-bench','Close Grip Bench Press','Dar tutuş bench press','Arka kol','horizontal-push','Barbell ve düz sehpa','Barı yaklaşık omuz genişliğinde tut. Bilekleri düz, kürek kemiklerini sehpa üzerinde sabit tutarak kontrollü indir ve it.',['Göğüs','Ön omuz']),
+ ex('db-front-raise','Dumbbell Front Raise','Dambılla öne omuz kaldırış','Ön omuz','front-raise','Dambıl','Dirsekleri hafif bükerek dambılları öne, omuz hizasına kadar kaldır. Gövdeyi savurma ve omuzları yukarı çekme.'),
  ex('machine-chest','Machine Chest Press','Makinede yatay göğüs press','Göğüs','horizontal-push','Göğüs press makinesi','Koltuğu tutacaklar göğüs hizasına gelecek şekilde ayarla. Sırtı destekten ayırmadan it, kontrollü dön.',['Ön omuz','Arka kol']),
  ex('supported-row','Chest-Supported Row','Göğüs destekli sırt çekişi','Sırt','horizontal-pull','Göğüs destekli row makinesi','Göğsünü desteğe yerleştir. Boynu nötr tutarak dirseklerini geriye çek. Gövdeyi sallama.',['Pazu','Arka omuz']),
  ex('neutral-pulldown','Neutral Grip Lat Pulldown','Nötr tutuş üstten çekiş','Sırt','vertical-pull','Kablo istasyonu ve nötr tutacak','Avuçlar birbirine baksın. Tutacağı üst göğse doğru çek, başı öne uzatma.',['Pazu']),
@@ -42,7 +44,7 @@ const row=(id,sets,reps,rir='1–2',rest=105)=>({...get(id),sets,reps,rir,rest,i
 function program(){return {
  Upper:[row('machine-chest',4,'6–10','2',150),row('supported-row',4,'8–12','2',150),row('neutral-pulldown',3,'8–12','2',150),row('cable-lateral',3,'12–20'),row('ez-curl',3,'10–15'),row('rope-pushdown',3,'10–15'),row('reverse-crunch',2,'10–20','2',75)],
  Lower:[row('leg-press',4,'8–12','2',180),row('rdl',3,'8–10','2–3',180),row('seated-curl',4,'10–15'),row('leg-extension',4,'10–15'),row('calf-press',5,'10–20')],
- Push:[row('incline-db',4,'8–12','2',150),row('shoulder-machine',2,'8–12','2',150),row('cable-fly',4,'10–15'),row('cable-lateral',3,'12–20'),row('overhead-triceps',3,'10–15'),row('rope-pushdown',2,'10–15')],
+ Push:[row('incline-db',4,'8–12','2',150),row('close-grip-bench',2,'8–12','2',150),row('shoulder-machine',3,'8–12','2',150),row('cable-fly',4,'10–15'),row('cable-lateral',3,'12–20'),row('db-front-raise',2,'12–15','2',90),row('overhead-triceps',3,'10–15'),row('rope-pushdown',2,'10–15')],
  Pull:[row('neutral-pulldown',4,'8–12','2',150),row('supported-row',3,'8–12','2',150),row('reverse-pec',4,'12–20'),row('hammer',3,'10–15'),row('cable-curl',2,'10–15'),row('reverse-crunch',2,'10–20','2',75)]};}
 function normalizeExercise(e){if(Array.isArray(e))e={name:e[0],sets:e[1],reps:e[2],rir:e[3]||'2'};return {...(get(e.id)||get(e.name)||{}),...e};}
 function migrate(input,foods=[],legacy={},date=day()){
@@ -52,7 +54,7 @@ function migrate(input,foods=[],legacy={},date=day()){
  foods.forEach(f=>{if(!d.foods.some(x=>x.name===f.name))d.foods.push(clone(f))});
  if(!d.form3){
   const old=clone(d.program||{}),schedule=clone(d.settings.trainingDays||{});
-  d.form3={migratedAt:new Date().toISOString(),planId:PLAN,planStart:date,legacy:clone(legacy),draft:null,equipment:{},mealPlans:{},nutritionComplete:{},habits:[],favoriteMeals:[],trash:[],lastExport:null,history:[{id:'legacy-'+Date.now(),name:'Önceki program',effectiveFrom:d.profile.startDate||date,program:old,schedule},{id:PLAN,name:'Dengeli Upper / Lower / Push / Pull',effectiveFrom:date,program:program(),schedule:{1:'Upper',2:'Lower',4:'Push',5:'Pull'}}]};
+  d.form3={pushRevision:'close-grip-front-2026-11-05',migratedAt:new Date().toISOString(),planId:PLAN,planStart:date,legacy:clone(legacy),draft:null,equipment:{},mealPlans:{},nutritionComplete:{},habits:[],favoriteMeals:[],trash:[],lastExport:null,history:[{id:'legacy-'+Date.now(),name:'Önceki program',effectiveFrom:d.profile.startDate||date,program:old,schedule},{id:PLAN,name:'Dengeli Upper / Lower / Push / Pull',effectiveFrom:date,program:program(),schedule:{1:'Upper',2:'Lower',4:'Push',5:'Pull'}}]};
   try{d.form3.favoriteMeals=JSON.parse(legacy.formFavoriteMealsV1||'[]')}catch{}
   d.program=program();d.settings.trainingDays={1:'Upper',2:'Lower',4:'Push',5:'Pull'};
  }
@@ -61,6 +63,20 @@ function migrate(input,foods=[],legacy={},date=day()){
   d.form3.nutritionTargetHistory.push({changedAt:new Date().toISOString(),previous:clone(d.targets),source:'28 Ekim 2026 Ertuğ planı için kaydedilen günlük toplamlar'});
   d.targets={...d.targets,kcal:2258.56,protein:172.21,carb:277.87,fat:62.19,fiber:42.06};
   d.form3.nutritionPlanId='ertug-2026-10-28';
+ }
+ if(d.form3.pushRevision!=='close-grip-front-2026-11-05'&&Array.isArray(d.program?.Push)){
+  const rows=d.program.Push.map(normalizeExercise);
+  for(const [id,after,reps,rest] of [['close-grip-bench','incline-db','8–12',150],['db-front-raise','cable-lateral','12–15',90]]){
+   const existing=rows.find(e=>e.id===id||e.name===get(id).name);
+   if(existing){existing.sets=2;continue;}
+   const index=rows.findIndex(e=>e.id===after);
+   rows.splice(index<0?rows.length:index+1,0,row(id,2,reps,'2',rest));
+  }
+  const shoulder=rows.find(e=>e.id==='shoulder-machine'||e.name===get('shoulder-machine').name);
+  if(shoulder)shoulder.sets=3;
+  d.program.Push=rows;
+  d.form3.history.push({id:d.form3.planId,name:'Push: Close Grip Bench Press ve Front Raise',effectiveFrom:date,program:clone(d.program),schedule:clone(d.settings.trainingDays)});
+  d.form3.pushRevision='close-grip-front-2026-11-05';
  }
  d.version=VERSION;return d;
 }
