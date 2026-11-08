@@ -1,5 +1,5 @@
-const CACHE='form-v3.2.4';
-const FILES=['/','/index.html','/form-app.css?v=324','/form-data.js?v=324','/form-model.js?v=324','/form-store.js?v=324','/form-workout-art.js?v=324','/form-app.js?v=324','/manifest.webmanifest','/icon-192.png','/icon-512.png'];
+const CACHE='form-v3.2.5';
+const FILES=['/','/index.html','/form-app.css?v=325','/form-data.js?v=325','/form-model.js?v=325','/form-store.js?v=325','/form-workout-art.js?v=325','/form-app.js?v=325','/manifest.webmanifest','/icon-192.png','/icon-512.png'];
 self.addEventListener('install',event=>event.waitUntil((async()=>{const cache=await caches.open(CACHE);await cache.addAll(FILES);await self.skipWaiting();})()));
 self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
 self.addEventListener('fetch',event=>{const u=new URL(event.request.url);if(event.request.method!=='GET'||u.origin!==self.location.origin)return;

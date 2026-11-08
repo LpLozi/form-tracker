@@ -1,6 +1,6 @@
 const {test}=require('node:test');const a=require('node:assert/strict');const M=require('../form-model');
 const fresh=()=>M.migrate(null,[],{},'2026-11-01');
-test('plan totals and weekly schedule',()=>{const d=fresh();a.deepEqual(Object.values(d.program).map(r=>r.reduce((n,e)=>n+e.sets,0)),[22,20,23,18]);a.equal(M.planAt(d,'2026-11-02').name,'Upper');a.equal(M.planAt(d,'2026-10-30').name,null)});
+test('plan totals and weekly schedule',()=>{const d=fresh();a.deepEqual(Object.values(d.program).map(r=>r.reduce((n,e)=>n+e.sets,0)),[22,32,23,18]);a.equal(M.planAt(d,'2026-11-02').name,'Upper');a.equal(M.planAt(d,'2026-10-30').name,null)});
 test('migration preserves original data and is idempotent',()=>{const old={workouts:[{date:'2026-10-01',exercises:[]}],foods:[{name:'A'}],meals:{'2026-10-01':{Öğle:[{foodIndex:0,qty:100,unit:'g'}]}},measurements:[{weight:80}],program:{Old:[['Bench',3,'10']]},settings:{trainingDays:{1:'Old'}},custom:{x:7}};const before=JSON.stringify(old),d=M.migrate(old,[{name:'B'}],{aylin:'keep'},'2026-11-01');a.equal(JSON.stringify(old),before);a.deepEqual(d.workouts,old.workouts);a.deepEqual(d.meals,old.meals);a.deepEqual(d.custom,old.custom);a.equal(d.form3.legacy.aylin,'keep');a.deepEqual(M.migrate(d),d);a.deepEqual(d.form3.history[0].program,old.program)});
 test('Istanbul midnight and calendar boundaries',()=>{a.equal(M.day(new Date('2026-10-31T21:01:00Z')),'2026-11-01');a.equal(M.week('2026-11-01'),'2026-10-26');a.equal(M.shift('2026-12-31',1),'2027-01-01');a.equal(M.validDay('2026-02-30'),false)});
 test('decimal and missing input',()=>{a.equal(M.number('32,5'),32.5);a.equal(M.number(''),null);a.equal(M.number('bad'),null)});
@@ -13,3 +13,14 @@ test('exercise insights isolate equipment, ignore warmups and compare rep record
 test('Tuesday Upper completes Monday Upper, never Tuesday Lower; Wednesday Lower keeps its date',()=>{const d=fresh();d.workouts=[{id:'u',type:'Upper',date:'2026-11-03'},{id:'l',type:'Lower',date:'2026-11-04'}];const before=JSON.stringify(d),w=M.trainingWeek(d,'2026-11-05');a.equal(w.slots[0].workout.id,'u');a.equal(w.slots[1].workout.id,'l');a.equal(w.slots[1].workout.date,'2026-11-04');a.equal(w.slots[2].workout,null);a.equal(JSON.stringify(d),before);d.workouts.pop();a.equal(M.trainingWeek(d,'2026-11-05').slots[1].workout,null);});
 test('matching cannot cross weeks or program versions and handles month boundaries',()=>{const d=fresh();d.workouts=[{type:'Upper',date:'2026-11-03'},{type:'Lower',date:'2026-11-10',planId:'other'}];a.equal(M.trainingWeek(d,'2026-11-10').slots.filter(s=>s.workout).length,0);d.workouts.push({type:'Upper',date:'2026-12-01'});a.equal(M.trainingWeek(d,'2026-11-30').slots[0].workout.date,'2026-12-01');});
 test('one session fills one repeated slot and exact-day takes precedence',()=>{const d=fresh();d.form3.history.at(-1).schedule={1:'Upper',4:'Upper'};d.workouts=[{id:'exact',type:'Upper',date:'2026-11-05'}];let w=M.trainingWeek(d,'2026-11-05');a.equal(w.slots[0].workout,null);a.equal(w.slots[1].workout.id,'exact');d.workouts.push({id:'shifted',type:'Upper',date:'2026-11-03'});w=M.trainingWeek(d,'2026-11-05');a.equal(w.slots[0].workout.id,'shifted');a.equal(w.slots[1].workout.id,'exact');});
+test('coach Lower migration preserves other days, active session and past calendar',()=>{
+ const d=fresh();delete d.form3.lowerRevision;d.program.Lower=[M.program().Upper[0]];
+ d.program.Push[0].sets=7;d.form3.draft=M.newDraft(d,'Lower','2026-11-07');
+ const before=structuredClone(d),next=M.migrate(d,[],{},'2026-11-08');
+ for(const name of ['Upper','Push','Pull'])a.deepEqual(next.program[name],before.program[name]);
+ a.deepEqual(next.settings,before.settings);a.deepEqual(next.form3.draft,before.form3.draft);
+ a.deepEqual(M.planAt(next,'2026-11-07'),M.planAt(before,'2026-11-07'));
+ a.equal(next.program.Lower.length,7);a.equal(next.program.Lower[5].reps,'15-12-(5+sb+5)-12-?-?');
+ a.equal(M.newDraft(next,'Lower').exercises.reduce((n,e)=>n+e.setData.length,0),32);
+ a.deepEqual(M.migrate(next,[],{},'2026-11-09'),next);
+});

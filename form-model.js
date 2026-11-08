@@ -1,7 +1,7 @@
 /* FORM 3: pure data rules, also exercised by node:test. */
 (function(root,factory){const api=factory();if(typeof module==='object')module.exports=api;else root.FormModel=api;})(typeof window==='object'?window:this,function(){
 'use strict';
-const VERSION='3.2.4',PLAN='balanced-ulpp-2026-11';
+const VERSION='3.2.5',PLAN='balanced-ulpp-2026-11';
 const clone=x=>JSON.parse(JSON.stringify(x));
 const number=x=>x===null||x===undefined||String(x).trim()===''?null:(Number.isFinite(Number(String(x).replace(',','.')))?Number(String(x).replace(',','.')):null);
 const day=(d=new Date())=>{const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d);return ['year','month','day'].map(k=>p.find(x=>x.type===k).value).join('-')};
@@ -41,9 +41,10 @@ const catalog=[
 ];
 const get=id=>catalog.find(e=>e.id===id||e.name===id);
 const row=(id,sets,reps,rir='1–2',rest=105)=>({...get(id),sets,reps,rir,rest,increment:2.5});
+function coachLower(){return [{"id": "smith-squat", "name": "Smith Full Squat", "tr": "Smith makinesinde squat", "group": "Ön bacak", "equipment": "Smith makinesi", "how": "Barı üst sırtına yerleştir. Ayaklarını rahat bir açıklığa al, karın kaslarını sıkıp diz–ayak hattını koruyarak çömel.", "sets": 4, "reps": "15-12-10-10", "rir": "", "rest": 120, "increment": 0, "source": "ertug-2026-10-28", "bodyweight": false}, {"id": "hack-squat", "name": "Hack Squat", "tr": "Hack squat", "group": "Ön bacak", "equipment": "Hack squat makinesi", "how": "Omuz pedlerine gir, bel ve kalçayı desteğe yasla. Dizleri ayak yönünde bükerek in, topuklardan iterek kalk.", "sets": 4, "reps": "10-10-10-12", "rir": "", "rest": 120, "increment": 0, "source": "ertug-2026-10-28", "bodyweight": false}, {"id": "wide-leg-press", "name": "Leg Wide Press", "tr": "Geniş ayaklı leg press", "group": "Ön bacak", "equipment": "Leg press makinesi", "how": "Ayaklarını platforma omuzdan biraz geniş yerleştir. Dizleri ayakların yönünde bük, kalçayı minderden kaldırma. Leg Wide Press + Walking Lunge süperset: iki hareketi art arda uygula.", "sets": 4, "reps": "15-12-10-8", "rir": "", "rest": 120, "increment": 0, "source": "ertug-2026-10-28", "bodyweight": false}, {"id": "walking-lunge", "name": "Walking Lunge", "tr": "Yürüyerek lunge", "group": "Ön bacak", "equipment": "Boş alan; isteğe bağlı dambıl", "how": "Öne uzun bir adım at, iki dizi kontrollü bük. Ön ayaktan güç alarak diğer bacağa geç; gövdeni dengede tut. Leg Wide Press + Walking Lunge süperset: iki hareketi art arda uygula.", "sets": 4, "reps": "12", "rir": "", "rest": 120, "increment": 0, "source": "ertug-2026-10-28", "bodyweight": true}, {"id": "coach-extension", "name": "Lever Leg Extension", "tr": "Makinede ön bacak açış", "group": "Ön bacak", "equipment": "Leg extension makinesi", "how": "Diz eklemini makinenin dönüş noktasına hizala. Ayak bileği yastığını yukarı kaldır, yavaşça indir. 5+sb+5 kaynak programdaki özel tekrar notudur.", "sets": 4, "reps": "15-12-(5+sb+5)-8", "rir": "", "rest": 120, "increment": 0, "source": "ertug-2026-10-28", "bodyweight": false}, {"id": "coach-curl", "name": "Lever Seated Leg Curl", "tr": "Oturarak arka bacak curl", "group": "Arka bacak", "equipment": "Seated leg curl makinesi", "how": "Dizini makine eksenine hizala, uylukları sabitle. Topukları geriye–aşağıya çekip hamstringi sık, yavaş dön. Kaynakta son iki setin tekrar hedefi okunamadı; hedefler boş bırakıldı. 5+sb+5 kaynak programdaki özel tekrar notudur.", "sets": 6, "reps": "15-12-(5+sb+5)-12-?-?", "rir": "", "rest": 120, "increment": 0, "source": "ertug-2026-10-28", "bodyweight": false}, {"id": "smith-calf", "name": "Smith Calf Raise", "tr": "Smith makinesinde baldır yükselişi", "group": "Baldır", "equipment": "Smith makinesi + yükselti", "how": "Ayak önlerini sağlam bir yükseltiye koy. Topukları kontrollü indirip parmak uçlarında yüksel; sekme yapma. 5+sb+5 kaynak programdaki özel tekrar notudur.", "sets": 6, "reps": "15-(5+sb+5)-12-10-10-8", "rir": "", "rest": 120, "increment": 0, "source": "ertug-2026-10-28", "bodyweight": false}];}
 function program(){return {
  Upper:[row('machine-chest',4,'6–10','2',150),row('supported-row',4,'8–12','2',150),row('neutral-pulldown',3,'8–12','2',150),row('cable-lateral',3,'12–20'),row('ez-curl',3,'10–15'),row('rope-pushdown',3,'10–15'),row('reverse-crunch',2,'10–20','2',75)],
- Lower:[row('leg-press',4,'8–12','2',180),row('rdl',3,'8–10','2–3',180),row('seated-curl',4,'10–15'),row('leg-extension',4,'10–15'),row('calf-press',5,'10–20')],
+ Lower:coachLower(),
  Push:[row('incline-db',4,'8–12','2',150),row('close-grip-bench',2,'8–12','2',150),row('shoulder-machine',3,'8–12','2',150),row('cable-fly',4,'10–15'),row('cable-lateral',3,'12–20'),row('db-front-raise',2,'12–15','2',90),row('overhead-triceps',3,'10–15'),row('rope-pushdown',2,'10–15')],
  Pull:[row('neutral-pulldown',4,'8–12','2',150),row('supported-row',3,'8–12','2',150),row('reverse-pec',4,'12–20'),row('hammer',3,'10–15'),row('cable-curl',2,'10–15'),row('reverse-crunch',2,'10–20','2',75)]};}
 function normalizeExercise(e){if(Array.isArray(e))e={name:e[0],sets:e[1],reps:e[2],rir:e[3]||'2'};return {...(get(e.id)||get(e.name)||{}),...e};}
@@ -78,6 +79,11 @@ function migrate(input,foods=[],legacy={},date=day()){
   d.form3.history.push({id:d.form3.planId,name:'Push: Close Grip Bench Press ve Front Raise',effectiveFrom:date,program:clone(d.program),schedule:clone(d.settings.trainingDays)});
   d.form3.pushRevision='close-grip-front-2026-11-05';
  }
+ if(d.form3.lowerRevision!=='ertug-lower-2026-11-08'){
+  d.program.Lower=coachLower();
+  d.form3.history.push({id:d.form3.planId,name:'Upper / Lower / Push / Pull · Bacak: Ertuğ',effectiveFrom:date,program:clone(d.program),schedule:clone(d.settings.trainingDays)});
+  d.form3.lowerRevision='ertug-lower-2026-11-08';
+ }
  d.version=VERSION;return d;
 }
 function validBackup(d){if(d?.form3){const f=d.form3;if(!['history','habits','favoriteMeals','trash'].every(k=>Array.isArray(f[k]))||!['equipment','mealPlans','nutritionComplete'].every(k=>f[k]&&typeof f[k]==='object'&&!Array.isArray(f[k]))||!f.history.every(h=>h&&validDay(h.effectiveFrom)&&h.schedule&&h.program&&Object.values(h.program).every(Array.isArray))||!d.program||!Object.values(d.program).every(Array.isArray)||f.draft&&(!Array.isArray(f.draft.exercises)||!f.draft.exercises.length||!f.draft.exercises.every(e=>Array.isArray(e.setData))))return false;}return !!d&&typeof d==='object'&&!Array.isArray(d)&&Array.isArray(d.workouts)&&Array.isArray(d.foods)&&Array.isArray(d.measurements)&&d.meals&&typeof d.meals==='object'&&!Array.isArray(d.meals)&&d.foods.every(f=>f&&typeof f.name==='string')&&d.workouts.every(w=>w&&validDay(w.date)&&Array.isArray(w.exercises||[]));}
@@ -94,6 +100,7 @@ function trainingWeek(d,date){
 function workingSets(e){return (e.setData||[]).filter(s=>s.done&&s.setType!=='warmup'&&s.setType!=='Isınma'&&number(s.reps)>0);}
 function history(d,e){return d.workouts.filter(w=>(w.exercises||[]).some(x=>x.name===e.name&&(x.equipmentKey||'')===(e.equipmentKey||'')&&workingSets(x).length)).slice().sort((a,b)=>a.date.localeCompare(b.date)||String(a.id||'').localeCompare(String(b.id||'')));}
 function advice(d,e){
+ if(e.source==='ertug-2026-10-28')return {kind:'Ertuğ programı',text:'Setlere göre belirtilen tekrar sırasını takip et. Piramit ve özel tekrar setlerinde otomatik ağırlık artışı uygulanmaz.'};
  const last=history(d,e).at(-1),sets=workingSets(last?.exercises.find(x=>x.name===e.name&&(x.equipmentKey||'')===(e.equipmentKey||''))||{});
  const range=String(e.reps||'').match(/\d+/g)?.map(Number)||[8,12],hi=range[1]||range[0];
  if(!sets.length)return {kind:'İlk kayıt',text:'Tekniği ve hedef RIR’i koruyarak başlangıç ağırlığını belirle.'};
